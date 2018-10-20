@@ -1,0 +1,11 @@
+[package]
+name = "webp-rs"
+version = "0.1.0"
+authors = ["Masaki Hara <ackie.h.gmai@gmail.com>"]
+
+[dependencies]
+
+[workspace]
+members = [
+  "libwebp-sys",
+]
