@@ -231,7 +231,7 @@ extern "C" {
     // #endif
     pub fn WebPValidateConfig(config: *const WebPConfig) -> c_int;
     pub fn WebPMemoryWriterInit(writer: *mut WebPMemoryWriter);
-    // #if WEBP_ENCODER_ABI_VERSION > 0x0202
+    // #if WEBP_ENCODER_ABI_VERSION > 0x0203
     // pub fn WebPMemoryWriterClear(writer: *mut WebPMemoryWriter);
     // #endif
     pub fn WebPMemoryWrite(data: *const u8, data_size: usize, picture: *const WebPPicture)
@@ -299,6 +299,9 @@ extern "C" {
         colorspace: WebPEncCSP,
         dithering: c_float,
     ) -> c_int;
+    // #if WEBP_ENCODER_ABI_VERSION > 0x0204
+    // pub fn WebPPictureSmartARGBToYUVA(picture: *mut WebPPicture) -> c_int;
+    // #endif
     pub fn WebPPictureYUVAToARGB(picture: *mut WebPPicture) -> c_int;
     pub fn WebPCleanupTransparentArea(picture: *mut WebPPicture);
     pub fn WebPPictureHasTransparency(picture: *const WebPPicture) -> c_int;

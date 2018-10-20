@@ -168,14 +168,18 @@ pub struct WebPDecoderOptions {
     pub dithering_strength: c_int,
     // #if WEBP_DECODER_ABI_VERSION > 0x0203
     // pub flip: c_int,
+    // #endif
+    // #if WEBP_DECODER_ABI_VERSION > 0x0204
     // pub alpha_dithering_strength: c_int,
     // #endif
     pub force_rotation: c_int,
     pub no_enhancement: c_int,
-    // #if WEBP_DECODER_ABI_VERSION > 0x0203
-    // pad: [u32; 3],
-    // #else
+    // #if WEBP_DECODER_ABI_VERSION <= 0x0203
     pub pad: [u32; 5],
+    // #elif WEBP_DECODER_ABI_VERSION <= 0x0204
+    // pub pad: [u32; 3],
+    // #else
+    // pub pad: [u32; 3],
     // #endif
 }
 
