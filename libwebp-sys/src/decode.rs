@@ -146,10 +146,16 @@ pub struct WebPBitstreamFeatures {
     pub has_alpha: c_int,
     pub has_animation: c_int,
     pub format: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub no_incremental_decoding: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub rotate: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub uv_sampling: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub pad: [u32; 2],
+    #[cfg(feature = "0.5.0")]
+    pub pad: [u32; 5],
 }
 
 #[repr(C)]
@@ -166,21 +172,15 @@ pub struct WebPDecoderOptions {
     pub scaled_height: c_int,
     pub use_threads: c_int,
     pub dithering_strength: c_int,
-    // #if WEBP_DECODER_ABI_VERSION > 0x0203
-    // pub flip: c_int,
-    // #endif
-    // #if WEBP_DECODER_ABI_VERSION > 0x0204
-    // pub alpha_dithering_strength: c_int,
-    // #endif
+    #[cfg(feature = "0.5.0")]
+    pub flip: c_int,
+    #[cfg(feature = "0.5.0")]
+    pub alpha_dithering_strength: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub force_rotation: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub no_enhancement: c_int,
-    // #if WEBP_DECODER_ABI_VERSION <= 0x0203
     pub pad: [u32; 5],
-    // #elif WEBP_DECODER_ABI_VERSION <= 0x0204
-    // pub pad: [u32; 3],
-    // #else
-    // pub pad: [u32; 3],
-    // #endif
 }
 
 #[repr(C)]
@@ -239,6 +239,8 @@ extern "C" {
         stride: *mut c_int,
         uv_stride: *mut c_int,
     ) -> *mut u8;
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPFree(ptr: *mut c_void);
     pub fn WebPDecodeRGBAInto(
         data: *const u8,
         data_size: usize,

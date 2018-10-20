@@ -1,5 +1,7 @@
 use std::os::raw::*;
 
+#[cfg(feature = "0.5.0")]
+use encode::{WebPConfig, WebPPicture};
 use mux_types::*;
 
 cfg_if! {
@@ -64,6 +66,26 @@ pub struct WebPMuxAnimParams {
     pub loop_count: c_int,
 }
 
+// extern {
+//     #[cfg(feature = "0.5.0")]
+//     pub type WebPAnimEncoder;
+// }
+#[cfg(feature = "0.5.0")]
+#[repr(C)]
+pub struct WebPAnimEncoder(c_void);
+
+#[cfg(feature = "0.5.0")]
+#[repr(C)]
+pub struct WebPAnimEncoderOptions {
+    pub anim_params: WebPMuxAnimParams,
+    pub minimize_size: c_int,
+    pub kmin: c_int,
+    pub kmax: c_int,
+    pub allow_mixed: c_int,
+    pub verbose: c_int,
+    pub padding: [u32; 4],
+}
+
 #[link(name = "webp")]
 extern "C" {
     pub fn WebPGetMuxVersion() -> c_int;
@@ -106,9 +128,8 @@ extern "C" {
         mux: *const WebPMux,
         params: *mut WebPMuxAnimParams,
     ) -> WebPMuxError;
-    // #if WEBP_MUX_ABI_VERSION > 0x0101
-    // pub fn WebPMuxSetCanvasSize(mux: *mut WebPMux, width: c_int, height: c_int) -> WebPMuxError;
-    // #endif
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPMuxSetCanvasSize(mux: *mut WebPMux, width: c_int, height: c_int) -> WebPMuxError;
     pub fn WebPMuxGetCanvasSize(
         mux: *const WebPMux,
         width: *mut c_int,
@@ -121,6 +142,28 @@ extern "C" {
         num_elements: *mut c_int,
     ) -> WebPMuxError;
     pub fn WebPMuxAssemble(mux: *mut WebPMux, assembled_data: *mut WebPData) -> WebPMuxError;
+    #[cfg(feature = "0.5.0")]
+    fn WebPAnimEncoderOptionsInitInternal(_: *mut WebPAnimEncoderOptions, _: c_int) -> c_int;
+    #[cfg(feature = "0.5.0")]
+    fn WebPAnimEncoderNewInternal(
+        _: c_int,
+        _: c_int,
+        _: *const WebPAnimEncoderOptions,
+        _: c_int,
+    ) -> *mut WebPAnimEncoder;
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPAnimEncoderAdd(
+        enc: *mut WebPAnimEncoder,
+        frame: *mut WebPPicture,
+        timestamp_ms: c_int,
+        config: *const WebPConfig,
+    ) -> c_int;
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPAnimEncoderAssemble(enc: *mut WebPAnimEncoder, webp_data: *mut WebPData) -> c_int;
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPAnimEncoderGetError(enc: *mut WebPAnimEncoder) -> *const c_char;
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPAnimEncoderDelete(enc: *mut WebPAnimEncoder);
 }
 
 #[allow(non_snake_case)]
@@ -134,4 +177,22 @@ pub unsafe extern "C" fn WebPMuxCreate(
     copy_data: c_int,
 ) -> *mut WebPMux {
     WebPMuxCreateInternal(bitstream, copy_data, WEBP_MUX_ABI_VERSION)
+}
+
+#[cfg(feature = "0.5.0")]
+#[allow(non_snake_case)]
+pub unsafe extern "C" fn WebPAnimEncoderOptionsInit(
+    enc_options: *mut WebPAnimEncoderOptions,
+) -> c_int {
+    WebPAnimEncoderOptionsInitInternal(enc_options, WEBP_MUX_ABI_VERSION)
+}
+
+#[cfg(feature = "0.5.0")]
+#[allow(non_snake_case)]
+pub unsafe extern "C" fn WebPAnimEncoderNew(
+    width: c_int,
+    height: c_int,
+    enc_options: *const WebPAnimEncoderOptions,
+) -> *mut WebPAnimEncoder {
+    WebPAnimEncoderNewInternal(width, height, enc_options, WEBP_MUX_ABI_VERSION)
 }

@@ -51,7 +51,14 @@ pub struct WebPConfig {
     pub emulate_jpeg_size: c_int,
     pub thread_level: c_int,
     pub low_memory: c_int,
+    #[cfg(feature = "0.5.0")]
+    pub near_lossless: c_int,
+    #[cfg(feature = "0.5.0")]
+    pub exact: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub pad: [u32; 5],
+    #[cfg(feature = "0.5.0")]
+    pub pad: [u32; 3],
 }
 
 #[allow(non_camel_case_types)]
@@ -84,7 +91,14 @@ pub struct WebPAuxStats {
     pub cache_bits: c_int,
     pub palette_size: c_int,
     pub lossless_size: c_int,
+    #[cfg(feature = "0.5.0")]
+    pub lossless_hdr_size: c_int,
+    #[cfg(feature = "0.5.0")]
+    pub lossless_data_size: c_int,
+    #[cfg(not(feature = "0.5.0"))]
     pub pad: [u32; 4],
+    #[cfg(feature = "0.5.0")]
+    pub pad: [u32; 2],
 }
 
 pub type WebPWriterFunction = Option<extern "C" fn(*const u8, usize, *const WebPPicture) -> c_int>;
@@ -225,15 +239,15 @@ extern "C" {
         stride: c_int,
         output: *mut *mut u8,
     ) -> usize;
+    // #[cfg(feature = "0.5.0")]
+    // pub fn WebPFree(ptr: *mut c_void);  // see decode.rs
     fn WebPConfigInitInternal(_: *mut WebPConfig, _: WebPPreset, _: c_float, _: c_int) -> c_int;
-    // #if WEBP_ENCODER_ABI_VERSION > 0x0202
-    // pub fn WebPConfigLosslessPreset(config: *mut WebPConfig, level: c_int) -> c_int;
-    // #endif
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPConfigLosslessPreset(config: *mut WebPConfig, level: c_int) -> c_int;
     pub fn WebPValidateConfig(config: *const WebPConfig) -> c_int;
     pub fn WebPMemoryWriterInit(writer: *mut WebPMemoryWriter);
-    // #if WEBP_ENCODER_ABI_VERSION > 0x0203
-    // pub fn WebPMemoryWriterClear(writer: *mut WebPMemoryWriter);
-    // #endif
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPMemoryWriterClear(writer: *mut WebPMemoryWriter);
     pub fn WebPMemoryWrite(data: *const u8, data_size: usize, picture: *const WebPPicture)
         -> c_int;
     fn WebPPictureInitInternal(_: *mut WebPPicture, _: c_int) -> c_int;
@@ -299,9 +313,8 @@ extern "C" {
         colorspace: WebPEncCSP,
         dithering: c_float,
     ) -> c_int;
-    // #if WEBP_ENCODER_ABI_VERSION > 0x0204
-    // pub fn WebPPictureSmartARGBToYUVA(picture: *mut WebPPicture) -> c_int;
-    // #endif
+    #[cfg(feature = "0.5.0")]
+    pub fn WebPPictureSmartARGBToYUVA(picture: *mut WebPPicture) -> c_int;
     pub fn WebPPictureYUVAToARGB(picture: *mut WebPPicture) -> c_int;
     pub fn WebPCleanupTransparentArea(picture: *mut WebPPicture);
     pub fn WebPPictureHasTransparency(picture: *const WebPPicture) -> c_int;
