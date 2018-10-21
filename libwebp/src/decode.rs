@@ -124,6 +124,119 @@ pub fn WebPDecodeYUV(data: &[u8]) -> Option<(u32, u32, u32, u32, WebpYuvBox)> {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct WebpUnknownError;
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeRGBAInto(
+    data: &[u8],
+    output_buffer: &mut [u8],
+    output_stride: u32,
+) -> Result<(), WebpUnknownError> {
+    let res = unsafe {
+        sys::WebPDecodeRGBAInto(
+            data.as_ptr(),
+            data.len(),
+            output_buffer.as_mut_ptr(),
+            output_buffer.len(),
+            output_stride as c_int,
+        )
+    };
+    if !res.is_null() {
+        Ok(())
+    } else {
+        Err(WebpUnknownError)
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeARGBInto(
+    data: &[u8],
+    output_buffer: &mut [u8],
+    output_stride: u32,
+) -> Result<(), WebpUnknownError> {
+    let res = unsafe {
+        sys::WebPDecodeARGBInto(
+            data.as_ptr(),
+            data.len(),
+            output_buffer.as_mut_ptr(),
+            output_buffer.len(),
+            output_stride as c_int,
+        )
+    };
+    if !res.is_null() {
+        Ok(())
+    } else {
+        Err(WebpUnknownError)
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeBGRAInto(
+    data: &[u8],
+    output_buffer: &mut [u8],
+    output_stride: u32,
+) -> Result<(), WebpUnknownError> {
+    let res = unsafe {
+        sys::WebPDecodeBGRAInto(
+            data.as_ptr(),
+            data.len(),
+            output_buffer.as_mut_ptr(),
+            output_buffer.len(),
+            output_stride as c_int,
+        )
+    };
+    if !res.is_null() {
+        Ok(())
+    } else {
+        Err(WebpUnknownError)
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeRGBInto(
+    data: &[u8],
+    output_buffer: &mut [u8],
+    output_stride: u32,
+) -> Result<(), WebpUnknownError> {
+    let res = unsafe {
+        sys::WebPDecodeRGBInto(
+            data.as_ptr(),
+            data.len(),
+            output_buffer.as_mut_ptr(),
+            output_buffer.len(),
+            output_stride as c_int,
+        )
+    };
+    if !res.is_null() {
+        Ok(())
+    } else {
+        Err(WebpUnknownError)
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeBGRInto(
+    data: &[u8],
+    output_buffer: &mut [u8],
+    output_stride: u32,
+) -> Result<(), WebpUnknownError> {
+    let res = unsafe {
+        sys::WebPDecodeBGRInto(
+            data.as_ptr(),
+            data.len(),
+            output_buffer.as_mut_ptr(),
+            output_buffer.len(),
+            output_stride as c_int,
+        )
+    };
+    if !res.is_null() {
+        Ok(())
+    } else {
+        Err(WebpUnknownError)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -279,5 +392,80 @@ mod tests {
         assert_eq!(y[..], include_bytes!("../data/5.y.dat")[..]);
         assert_eq!(u[..], include_bytes!("../data/5.u.dat")[..]);
         assert_eq!(v[..], include_bytes!("../data/5.v.dat")[..]);
+    }
+
+    #[test]
+    fn test_decode_rgba_into() {
+        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 4];
+        WebPDecodeRGBAInto(data4_webp(), &mut data, width * 4).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGBA) as &[u8]);
+
+        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 4];
+        WebPDecodeRGBAInto(data5_webp(), &mut data, width * 4).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGBA) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_argb_into() {
+        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 4];
+        WebPDecodeARGBInto(data4_webp(), &mut data, width * 4).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::ARGB) as &[u8]);
+
+        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 4];
+        WebPDecodeARGBInto(data5_webp(), &mut data, width * 4).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::ARGB) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_bgra_into() {
+        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 4];
+        WebPDecodeBGRAInto(data4_webp(), &mut data, width * 4).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGRA) as &[u8]);
+
+        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 4];
+        WebPDecodeBGRAInto(data5_webp(), &mut data, width * 4).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGRA) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_rgb_into() {
+        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 3];
+        WebPDecodeRGBInto(data4_webp(), &mut data, width * 3).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGB) as &[u8]);
+
+        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 3];
+        WebPDecodeRGBInto(data5_webp(), &mut data, width * 3).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGB) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_bgr_into() {
+        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 3];
+        WebPDecodeBGRInto(data4_webp(), &mut data, width * 3).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGR) as &[u8]);
+
+        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
+        let mut data = vec![0; width as usize * height as usize * 3];
+        WebPDecodeBGRInto(data5_webp(), &mut data, width * 3).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGR) as &[u8]);
     }
 }
