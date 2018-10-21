@@ -237,6 +237,38 @@ pub fn WebPDecodeBGRInto(
     }
 }
 
+#[allow(non_snake_case)]
+pub fn WebPDecodeYUVInto(
+    data: &[u8],
+    luma: &mut [u8],
+    luma_stride: u32,
+    u: &mut [u8],
+    u_stride: u32,
+    v: &mut [u8],
+    v_stride: u32,
+) -> Result<(), WebpUnknownError> {
+    let res = unsafe {
+        sys::WebPDecodeYUVInto(
+            data.as_ptr(),
+            data.len(),
+            luma.as_mut_ptr(),
+            luma.len(),
+            luma_stride as c_int,
+            u.as_mut_ptr(),
+            u.len(),
+            u_stride as c_int,
+            v.as_mut_ptr(),
+            v.len(),
+            v_stride as c_int,
+        )
+    };
+    if !res.is_null() {
+        Ok(())
+    } else {
+        Err(WebpUnknownError)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -467,5 +499,46 @@ mod tests {
         WebPDecodeBGRInto(data5_webp(), &mut data, width * 3).unwrap();
         assert_eq!((width, height), (1024, 752));
         assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGR) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_yuv_into() {
+        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
+        let uv_width = (width + 1) / 2;
+        let uv_height = (height + 1) / 2;
+        let mut y = vec![0; width as usize * height as usize];
+        let mut u = vec![0; uv_width as usize * uv_height as usize];
+        let mut v = vec![0; uv_width as usize * uv_height as usize];
+        WebPDecodeYUVInto(
+            data4_webp(),
+            &mut y,
+            width,
+            &mut u,
+            uv_width,
+            &mut v,
+            uv_width,
+        ).unwrap();
+        assert_eq!(y[..], include_bytes!("../data/4.y.dat")[..]);
+        assert_eq!(u[..], include_bytes!("../data/4.u.dat")[..]);
+        assert_eq!(v[..], include_bytes!("../data/4.v.dat")[..]);
+
+        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
+        let uv_width = (width + 1) / 2;
+        let uv_height = (height + 1) / 2;
+        let mut y = vec![0; width as usize * height as usize];
+        let mut u = vec![0; uv_width as usize * uv_height as usize];
+        let mut v = vec![0; uv_width as usize * uv_height as usize];
+        WebPDecodeYUVInto(
+            data5_webp(),
+            &mut y,
+            width,
+            &mut u,
+            uv_width,
+            &mut v,
+            uv_width,
+        ).unwrap();
+        assert_eq!(y[..], include_bytes!("../data/5.y.dat")[..]);
+        assert_eq!(u[..], include_bytes!("../data/5.u.dat")[..]);
+        assert_eq!(v[..], include_bytes!("../data/5.v.dat")[..]);
     }
 }
