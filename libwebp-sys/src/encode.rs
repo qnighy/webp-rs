@@ -55,10 +55,16 @@ pub struct WebPConfig {
     pub near_lossless: c_int,
     #[cfg(feature = "0.5.0")]
     pub exact: c_int,
+    #[cfg(feature = "0.6.0")]
+    pub use_delta_palette: c_int,
+    #[cfg(feature = "0.6.0")]
+    pub use_sharp_yuv: c_int,
     #[cfg(not(feature = "0.5.0"))]
     pub pad: [u32; 5],
-    #[cfg(feature = "0.5.0")]
+    #[cfg(all(feature = "0.5.0", not(feature = "0.6.0")))]
     pub pad: [u32; 3],
+    #[cfg(feature = "0.6.0")]
+    pub pad: [u32; 2],
 }
 
 #[allow(non_camel_case_types)]
@@ -254,6 +260,19 @@ extern "C" {
     pub fn WebPPictureAlloc(picture: *mut WebPPicture) -> c_int;
     pub fn WebPPictureFree(picture: *mut WebPPicture);
     pub fn WebPPictureCopy(src: *const WebPPicture, dst: *mut WebPPicture) -> c_int;
+    #[cfg(feature = "0.6.0")]
+    pub fn WebPPlaneDistortion(
+        src: *const u8,
+        src_stride: usize,
+        ref_: *const u8,
+        ref_stride: usize,
+        width: c_int,
+        height: c_int,
+        x_step: usize,
+        type_: c_int,
+        distortion: *mut c_float,
+        result: *mut c_float,
+    ) -> c_int;
     pub fn WebPPictureDistortion(
         src: *const WebPPicture,
         ref_: *const WebPPicture,

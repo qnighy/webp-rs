@@ -11,12 +11,15 @@ pub use self::WebPMuxAnimDispose::*;
 #[allow(non_camel_case_types)]
 #[repr(C)]
 pub enum WebPFeatureFlags {
+    #[cfg(not(feature = "0.6.0"))]
     FRAGMENTS_FLAG = 0x00000001,
     ANIMATION_FLAG = 0x00000002,
     XMP_FLAG = 0x00000004,
     EXIF_FLAG = 0x00000008,
     ALPHA_FLAG = 0x00000010,
     ICCP_FLAG = 0x00000020,
+    #[cfg(feature = "0.6.0")]
+    ALL_VALID_FLAGS = 0x0000003E,
 }
 
 #[allow(non_camel_case_types)]
