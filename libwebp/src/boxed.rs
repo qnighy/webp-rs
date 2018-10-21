@@ -180,3 +180,67 @@ impl<T: ?Sized> fmt::Pointer for WebpBox<T> {
         fmt::Pointer::fmt(&self.ptr, f)
     }
 }
+
+pub struct WebpYuvBox {
+    y: WebpBox<[u8]>,
+    u: NonNull<[u8]>,
+    v: NonNull<[u8]>,
+}
+
+impl WebpYuvBox {
+    pub(crate) unsafe fn from_raw_parts(
+        y: *mut u8,
+        y_size: usize,
+        u: *mut u8,
+        u_size: usize,
+        v: *mut u8,
+        v_size: usize,
+    ) -> Self {
+        let y = WebpBox::from_raw_parts(y, y_size);
+        let u = NonNull::new_unchecked(slice::from_raw_parts_mut(u, u_size));
+        let v = NonNull::new_unchecked(slice::from_raw_parts_mut(v, v_size));
+        Self { y, u, v }
+    }
+
+    pub fn yuv(&self) -> (&[u8], &[u8], &[u8]) {
+        unsafe { (&self.y, self.u.as_ref(), self.v.as_ref()) }
+    }
+
+    pub fn yuv_mut(&mut self) -> (&mut [u8], &mut [u8], &mut [u8]) {
+        unsafe { (&mut self.y, self.u.as_mut(), self.v.as_mut()) }
+    }
+
+    pub fn y(&self) -> &[u8] {
+        &self.y
+    }
+
+    pub fn u(&self) -> &[u8] {
+        unsafe { self.u.as_ref() }
+    }
+
+    pub fn v(&self) -> &[u8] {
+        unsafe { self.v.as_ref() }
+    }
+
+    pub fn y_mut(&mut self) -> &mut [u8] {
+        &mut self.y
+    }
+
+    pub fn u_mut(&mut self) -> &mut [u8] {
+        unsafe { self.u.as_mut() }
+    }
+
+    pub fn v_mut(&mut self) -> &mut [u8] {
+        unsafe { self.v.as_mut() }
+    }
+}
+
+impl fmt::Debug for WebpYuvBox {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("WebpYuvBox")
+            .field("y", &self.y())
+            .field("u", &self.u())
+            .field("v", &self.v())
+            .finish()
+    }
+}
