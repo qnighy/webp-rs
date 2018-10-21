@@ -38,8 +38,85 @@ pub fn WebPDecodeRGBA(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
 mod tests {
     use super::*;
 
+    #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    enum ColorOrder {
+        RGBA,
+        ARGB,
+        BGRA,
+        RGB,
+        BGR,
+    }
+    fn decode_png(data: &[u8], color_order: ColorOrder) -> Vec<u8> {
+        use png::{ColorType, Decoder};
+        use std::io::Cursor;
+        use std::iter;
+        let (info, mut r) = Decoder::new(Cursor::new(data)).read_info().unwrap();
+        let mut buf = vec![0; info.buffer_size()];
+        r.next_frame(&mut buf).unwrap();
+        buf.chunks(info.color_type.samples())
+            .flat_map(|chunk| {
+                let (r, g, b, a) = match info.color_type {
+                    ColorType::Grayscale => (chunk[0], chunk[0], chunk[0], 255),
+                    ColorType::RGB => (chunk[0], chunk[1], chunk[2], 255),
+                    ColorType::Indexed => unimplemented!(),
+                    ColorType::GrayscaleAlpha => (chunk[0], chunk[0], chunk[0], chunk[1]),
+                    ColorType::RGBA => (chunk[0], chunk[1], chunk[2], chunk[3]),
+                };
+                match color_order {
+                    ColorOrder::RGBA => iter::once(r)
+                        .chain(iter::once(g))
+                        .chain(iter::once(b))
+                        .chain(Some(a)),
+                    ColorOrder::ARGB => iter::once(a)
+                        .chain(iter::once(r))
+                        .chain(iter::once(g))
+                        .chain(Some(b)),
+                    ColorOrder::BGRA => iter::once(b)
+                        .chain(iter::once(g))
+                        .chain(iter::once(r))
+                        .chain(Some(a)),
+                    ColorOrder::RGB => iter::once(r)
+                        .chain(iter::once(g))
+                        .chain(iter::once(b))
+                        .chain(None),
+                    ColorOrder::BGR => iter::once(b)
+                        .chain(iter::once(g))
+                        .chain(iter::once(r))
+                        .chain(None),
+                }
+            }).collect()
+    }
+
+    fn data4_webp() -> &'static [u8] {
+        include_bytes!("../data/4.webp")
+    }
+
+    fn data4_expect(color_order: ColorOrder) -> Vec<u8> {
+        decode_png(include_bytes!("../data/4.webp.png"), color_order)
+    }
+
+    fn data5_webp() -> &'static [u8] {
+        include_bytes!("../data/5.webp")
+    }
+
+    fn data5_expect(color_order: ColorOrder) -> Vec<u8> {
+        decode_png(include_bytes!("../data/5.webp.png"), color_order)
+    }
+
+    #[test]
+    fn test_get_info() {
+        assert_eq!(WebPGetInfo(data4_webp()), Some((1024, 772)));
+        assert_eq!(WebPGetInfo(data5_webp()), Some((1024, 752)));
+    }
+
     #[test]
     fn test_decode_rgba() {
-        WebPDecodeRGBA(&[]);
+        let (width, height, data) = WebPDecodeRGBA(data4_webp()).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGBA) as &[u8]);
+
+        let (width, height, data) = WebPDecodeRGBA(data5_webp()).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGBA) as &[u8]);
     }
 }
