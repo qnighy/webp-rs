@@ -6,7 +6,7 @@ pub use self::WebPImageHint::*;
 pub use self::WebPPreset::*;
 
 cfg_if! {
-    if #[cfg(feature = "0.6.0-rc2")] {
+    if #[cfg(feature = "0.6.0")] {
         pub const WEBP_ENCODER_ABI_VERSION: c_int = 0x020E;
     } else if #[cfg(feature = "0.5.0")] {
         pub const WEBP_ENCODER_ABI_VERSION: c_int = 0x0209;

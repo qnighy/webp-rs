@@ -7,8 +7,6 @@ use mux_types::*;
 cfg_if! {
     if #[cfg(feature = "0.6.0")] {
         pub const WEBP_MUX_ABI_VERSION: c_int = 0x0108;
-    } else if #[cfg(feature = "0.6.0-rc2")] {
-        pub const WEBP_MUX_ABI_VERSION: c_int = 0x0107;
     } else if #[cfg(feature = "0.5.0")] {
         pub const WEBP_MUX_ABI_VERSION: c_int = 0x0106;
     } else {
