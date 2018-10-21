@@ -6,7 +6,7 @@ pub use self::WebPImageHint::*;
 pub use self::WebPPreset::*;
 
 cfg_if! {
-    if #[cfg(feature = "0.6.0")] {
+    if #[cfg(feature = "0.6")] {
         pub const WEBP_ENCODER_ABI_VERSION: c_int = 0x020E;
     } else if #[cfg(feature = "0.5")] {
         pub const WEBP_ENCODER_ABI_VERSION: c_int = 0x0209;
@@ -55,15 +55,15 @@ pub struct WebPConfig {
     pub near_lossless: c_int,
     #[cfg(feature = "0.5")]
     pub exact: c_int,
-    #[cfg(feature = "0.6.0")]
+    #[cfg(feature = "0.6")]
     pub use_delta_palette: c_int,
-    #[cfg(feature = "0.6.0")]
+    #[cfg(feature = "0.6")]
     pub use_sharp_yuv: c_int,
     #[cfg(not(feature = "0.5"))]
     pub pad: [u32; 5],
-    #[cfg(all(feature = "0.5", not(feature = "0.6.0")))]
+    #[cfg(all(feature = "0.5", not(feature = "0.6")))]
     pub pad: [u32; 3],
-    #[cfg(feature = "0.6.0")]
+    #[cfg(feature = "0.6")]
     pub pad: [u32; 2],
 }
 
@@ -260,7 +260,7 @@ extern "C" {
     pub fn WebPPictureAlloc(picture: *mut WebPPicture) -> c_int;
     pub fn WebPPictureFree(picture: *mut WebPPicture);
     pub fn WebPPictureCopy(src: *const WebPPicture, dst: *mut WebPPicture) -> c_int;
-    #[cfg(feature = "0.6.0")]
+    #[cfg(feature = "0.6")]
     pub fn WebPPlaneDistortion(
         src: *const u8,
         src_stride: usize,

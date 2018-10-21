@@ -5,7 +5,7 @@ use encode::{WebPConfig, WebPPicture};
 use mux_types::*;
 
 cfg_if! {
-    if #[cfg(feature = "0.6.0")] {
+    if #[cfg(feature = "0.6")] {
         pub const WEBP_MUX_ABI_VERSION: c_int = 0x0108;
     } else if #[cfg(feature = "0.5")] {
         pub const WEBP_MUX_ABI_VERSION: c_int = 0x0106;
@@ -37,9 +37,9 @@ pub enum WebPChunkId {
     WEBP_CHUNK_ICCP,
     WEBP_CHUNK_ANIM,
     WEBP_CHUNK_ANMF,
-    #[cfg(not(feature = "0.6.0"))]
+    #[cfg(not(feature = "0.6"))]
     WEBP_CHUNK_FRGM,
-    #[cfg(feature = "0.6.0")]
+    #[cfg(feature = "0.6")]
     WEBP_CHUNK_DEPRECATED,
     WEBP_CHUNK_ALPHA,
     WEBP_CHUNK_IMAGE,
