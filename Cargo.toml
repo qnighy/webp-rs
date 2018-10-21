@@ -8,4 +8,5 @@ authors = ["Masaki Hara <ackie.h.gmai@gmail.com>"]
 [workspace]
 members = [
   "libwebp-sys",
+  "libwebp",
 ]
