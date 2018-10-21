@@ -34,6 +34,58 @@ pub fn WebPDecodeRGBA(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
     }
 }
 
+#[allow(non_snake_case)]
+pub fn WebPDecodeARGB(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+    let mut width: c_int = 0;
+    let mut height: c_int = 0;
+    let res = unsafe { sys::WebPDecodeARGB(data.as_ptr(), data.len(), &mut width, &mut height) };
+    if !res.is_null() {
+        let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 4) };
+        Some((width as u32, height as u32, b))
+    } else {
+        None
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeBGRA(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+    let mut width: c_int = 0;
+    let mut height: c_int = 0;
+    let res = unsafe { sys::WebPDecodeBGRA(data.as_ptr(), data.len(), &mut width, &mut height) };
+    if !res.is_null() {
+        let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 4) };
+        Some((width as u32, height as u32, b))
+    } else {
+        None
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeRGB(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+    let mut width: c_int = 0;
+    let mut height: c_int = 0;
+    let res = unsafe { sys::WebPDecodeRGB(data.as_ptr(), data.len(), &mut width, &mut height) };
+    if !res.is_null() {
+        let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 3) };
+        Some((width as u32, height as u32, b))
+    } else {
+        None
+    }
+}
+
+#[allow(non_snake_case)]
+pub fn WebPDecodeBGR(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+    let mut width: c_int = 0;
+    let mut height: c_int = 0;
+    let res = unsafe { sys::WebPDecodeBGR(data.as_ptr(), data.len(), &mut width, &mut height) };
+    if !res.is_null() {
+        let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 3) };
+        Some((width as u32, height as u32, b))
+    } else {
+        None
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -118,5 +170,49 @@ mod tests {
         let (width, height, data) = WebPDecodeRGBA(data5_webp()).unwrap();
         assert_eq!((width, height), (1024, 752));
         assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGBA) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_argb() {
+        let (width, height, data) = WebPDecodeARGB(data4_webp()).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::ARGB) as &[u8]);
+
+        let (width, height, data) = WebPDecodeARGB(data5_webp()).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::ARGB) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_bgra() {
+        let (width, height, data) = WebPDecodeBGRA(data4_webp()).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGRA) as &[u8]);
+
+        let (width, height, data) = WebPDecodeBGRA(data5_webp()).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGRA) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_rgb() {
+        let (width, height, data) = WebPDecodeRGB(data4_webp()).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGB) as &[u8]);
+
+        let (width, height, data) = WebPDecodeRGB(data5_webp()).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGB) as &[u8]);
+    }
+
+    #[test]
+    fn test_decode_bgr() {
+        let (width, height, data) = WebPDecodeBGR(data4_webp()).unwrap();
+        assert_eq!((width, height), (1024, 772));
+        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGR) as &[u8]);
+
+        let (width, height, data) = WebPDecodeBGR(data5_webp()).unwrap();
+        assert_eq!((width, height), (1024, 752));
+        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGR) as &[u8]);
     }
 }
