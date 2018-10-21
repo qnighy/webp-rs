@@ -5,7 +5,7 @@ pub use self::VP8StatusCode::*;
 pub use self::WEBP_CSP_MODE::*;
 
 cfg_if! {
-    if #[cfg(feature = "0.5.0")] {
+    if #[cfg(feature = "0.5")] {
         pub const WEBP_DECODER_ABI_VERSION: c_int = 0x0208;
     } else {
         pub const WEBP_DECODER_ABI_VERSION: c_int = 0x0203;
@@ -146,15 +146,15 @@ pub struct WebPBitstreamFeatures {
     pub has_alpha: c_int,
     pub has_animation: c_int,
     pub format: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub no_incremental_decoding: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub rotate: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub uv_sampling: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub pad: [u32; 2],
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub pad: [u32; 5],
 }
 
@@ -172,13 +172,13 @@ pub struct WebPDecoderOptions {
     pub scaled_height: c_int,
     pub use_threads: c_int,
     pub dithering_strength: c_int,
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub flip: c_int,
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub alpha_dithering_strength: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub force_rotation: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub no_enhancement: c_int,
     pub pad: [u32; 5],
 }
@@ -239,7 +239,7 @@ extern "C" {
         stride: *mut c_int,
         uv_stride: *mut c_int,
     ) -> *mut u8;
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub fn WebPFree(ptr: *mut c_void);
     pub fn WebPDecodeRGBAInto(
         data: *const u8,

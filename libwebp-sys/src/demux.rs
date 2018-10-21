@@ -1,12 +1,12 @@
 use std::os::raw::*;
 use std::ptr;
 
-#[cfg(feature = "0.5.0")]
+#[cfg(feature = "0.5")]
 use decode::*;
 use mux_types::*;
 
 cfg_if! {
-    if #[cfg(feature = "0.5.0")] {
+    if #[cfg(feature = "0.5")] {
         pub const WEBP_DEMUX_ABI_VERSION: c_int = 0x0107;
     } else {
         pub const WEBP_DEMUX_ABI_VERSION: c_int = 0x0101;
@@ -42,9 +42,9 @@ pub enum WebPFormatFeature {
 pub struct WebPIterator {
     pub frame_num: c_int,
     pub num_frames: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub fragment_num: c_int,
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub num_fragments: c_int,
     pub x_offset: c_int,
     pub y_offset: c_int,
@@ -70,14 +70,14 @@ pub struct WebPChunkIterator {
 }
 
 // extern {
-//     #[cfg(feature = "0.5.0")]
+//     #[cfg(feature = "0.5")]
 //     pub type WebPAnimDecoder;
 // }
-#[cfg(feature = "0.5.0")]
+#[cfg(feature = "0.5")]
 #[repr(C)]
 pub struct WebPAnimDecoder(c_void);
 
-#[cfg(feature = "0.5.0")]
+#[cfg(feature = "0.5")]
 #[repr(C)]
 pub struct WebPAnimDecoderOptions {
     pub color_mode: WEBP_CSP_MODE,
@@ -85,7 +85,7 @@ pub struct WebPAnimDecoderOptions {
     pub padding: [u32; 7],
 }
 
-#[cfg(feature = "0.5.0")]
+#[cfg(feature = "0.5")]
 #[repr(C)]
 pub struct WebPAnimInfo {
     pub canvas_width: u32,
@@ -114,7 +114,7 @@ extern "C" {
     ) -> c_int;
     pub fn WebPDemuxNextFrame(iter: *mut WebPIterator) -> c_int;
     pub fn WebPDemuxPrevFrame(iter: *mut WebPIterator) -> c_int;
-    #[cfg(not(feature = "0.5.0"))]
+    #[cfg(not(feature = "0.5"))]
     pub fn WebPDemuxSelectFragment(iter: *mut WebPIterator, fragment_num: c_int) -> c_int;
     pub fn WebPDemuxReleaseIterator(iter: *mut WebPIterator);
     pub fn WebPDemuxGetChunk(
@@ -126,29 +126,29 @@ extern "C" {
     pub fn WebPDemuxNextChunk(iter: *mut WebPChunkIterator) -> c_int;
     pub fn WebPDemuxPrevChunk(iter: *mut WebPChunkIterator) -> c_int;
     pub fn WebPDemuxReleaseChunkIterator(iter: *mut WebPChunkIterator);
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     fn WebPAnimDecoderOptionsInitInternal(_: *mut WebPAnimDecoderOptions, _: c_int) -> c_int;
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     fn WebPAnimDecoderNewInternal(
         _: *const WebPData,
         _: *const WebPAnimDecoderOptions,
         _: c_int,
     ) -> *mut WebPAnimDecoder;
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub fn WebPAnimDecoderGetInfo(dec: *const WebPAnimDecoder, info: *mut WebPAnimInfo) -> c_int;
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub fn WebPAnimDecoderGetNext(
         dec: *mut WebPAnimDecoder,
         buf: *mut *mut u8,
         timestamp: *mut c_int,
     ) -> c_int;
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub fn WebPAnimDecoderHasMoreFrames(dec: *const WebPAnimDecoder) -> c_int;
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub fn WebPAnimDecoderReset(dec: *mut WebPAnimDecoder);
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub fn WebPAnimDecoderGetDemuxer(dec: *const WebPAnimDecoder) -> *const WebPDemuxer;
-    #[cfg(feature = "0.5.0")]
+    #[cfg(feature = "0.5")]
     pub fn WebPAnimDecoderDelete(dec: *mut WebPAnimDecoder);
 }
 
@@ -165,7 +165,7 @@ pub unsafe extern "C" fn WebPDemuxPartial(
     WebPDemuxInternal(data, 1, state, WEBP_DEMUX_ABI_VERSION)
 }
 
-#[cfg(feature = "0.5.0")]
+#[cfg(feature = "0.5")]
 #[allow(non_snake_case)]
 pub unsafe extern "C" fn WebPAnimDecoderOptionsInit(
     dec_options: *mut WebPAnimDecoderOptions,
@@ -173,7 +173,7 @@ pub unsafe extern "C" fn WebPAnimDecoderOptionsInit(
     WebPAnimDecoderOptionsInitInternal(dec_options, WEBP_DEMUX_ABI_VERSION)
 }
 
-#[cfg(feature = "0.5.0")]
+#[cfg(feature = "0.5")]
 #[allow(non_snake_case)]
 pub unsafe extern "C" fn WebPAnimDecoderNew(
     webp_data: *const WebPData,
