@@ -11,84 +11,84 @@ pub fn WebPGetDecoderVersion() -> u32 {
 }
 
 #[allow(non_snake_case)]
-pub fn WebPGetInfo(data: &[u8]) -> Option<(u32, u32)> {
+pub fn WebPGetInfo(data: &[u8]) -> Result<(u32, u32), WebpUnknownError> {
     let mut width: c_int = 0;
     let mut height: c_int = 0;
     let res = unsafe { sys::WebPGetInfo(data.as_ptr(), data.len(), &mut width, &mut height) };
     if res != 0 {
-        Some((width as u32, height as u32))
+        Ok((width as u32, height as u32))
     } else {
-        None
+        Err(WebpUnknownError)
     }
 }
 
 #[allow(non_snake_case)]
-pub fn WebPDecodeRGBA(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+pub fn WebPDecodeRGBA(data: &[u8]) -> Result<(u32, u32, WebpBox<[u8]>), WebpUnknownError> {
     let mut width: c_int = 0;
     let mut height: c_int = 0;
     let res = unsafe { sys::WebPDecodeRGBA(data.as_ptr(), data.len(), &mut width, &mut height) };
     if !res.is_null() {
         let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 4) };
-        Some((width as u32, height as u32, b))
+        Ok((width as u32, height as u32, b))
     } else {
-        None
+        Err(WebpUnknownError)
     }
 }
 
 #[allow(non_snake_case)]
-pub fn WebPDecodeARGB(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+pub fn WebPDecodeARGB(data: &[u8]) -> Result<(u32, u32, WebpBox<[u8]>), WebpUnknownError> {
     let mut width: c_int = 0;
     let mut height: c_int = 0;
     let res = unsafe { sys::WebPDecodeARGB(data.as_ptr(), data.len(), &mut width, &mut height) };
     if !res.is_null() {
         let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 4) };
-        Some((width as u32, height as u32, b))
+        Ok((width as u32, height as u32, b))
     } else {
-        None
+        Err(WebpUnknownError)
     }
 }
 
 #[allow(non_snake_case)]
-pub fn WebPDecodeBGRA(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+pub fn WebPDecodeBGRA(data: &[u8]) -> Result<(u32, u32, WebpBox<[u8]>), WebpUnknownError> {
     let mut width: c_int = 0;
     let mut height: c_int = 0;
     let res = unsafe { sys::WebPDecodeBGRA(data.as_ptr(), data.len(), &mut width, &mut height) };
     if !res.is_null() {
         let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 4) };
-        Some((width as u32, height as u32, b))
+        Ok((width as u32, height as u32, b))
     } else {
-        None
+        Err(WebpUnknownError)
     }
 }
 
 #[allow(non_snake_case)]
-pub fn WebPDecodeRGB(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+pub fn WebPDecodeRGB(data: &[u8]) -> Result<(u32, u32, WebpBox<[u8]>), WebpUnknownError> {
     let mut width: c_int = 0;
     let mut height: c_int = 0;
     let res = unsafe { sys::WebPDecodeRGB(data.as_ptr(), data.len(), &mut width, &mut height) };
     if !res.is_null() {
         let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 3) };
-        Some((width as u32, height as u32, b))
+        Ok((width as u32, height as u32, b))
     } else {
-        None
+        Err(WebpUnknownError)
     }
 }
 
 #[allow(non_snake_case)]
-pub fn WebPDecodeBGR(data: &[u8]) -> Option<(u32, u32, WebpBox<[u8]>)> {
+pub fn WebPDecodeBGR(data: &[u8]) -> Result<(u32, u32, WebpBox<[u8]>), WebpUnknownError> {
     let mut width: c_int = 0;
     let mut height: c_int = 0;
     let res = unsafe { sys::WebPDecodeBGR(data.as_ptr(), data.len(), &mut width, &mut height) };
     if !res.is_null() {
         let b = unsafe { WebpBox::from_raw_parts(res, width as usize * height as usize * 3) };
-        Some((width as u32, height as u32, b))
+        Ok((width as u32, height as u32, b))
     } else {
-        None
+        Err(WebpUnknownError)
     }
 }
 
 #[allow(non_snake_case)]
-pub fn WebPDecodeYUV(data: &[u8]) -> Option<(u32, u32, u32, u32, WebpYuvBox)> {
+pub fn WebPDecodeYUV(data: &[u8]) -> Result<(u32, u32, u32, u32, WebpYuvBox), WebpUnknownError> {
     let mut width: c_int = 0;
     let mut height: c_int = 0;
     let mut u: *mut u8 = ptr::null_mut();
@@ -112,7 +112,7 @@ pub fn WebPDecodeYUV(data: &[u8]) -> Option<(u32, u32, u32, u32, WebpYuvBox)> {
         let y_size = stride as usize * height as usize;
         let uv_size = uv_stride as usize * uv_height as usize;
         let yuv = unsafe { WebpYuvBox::from_raw_parts(res, y_size, u, uv_size, v, uv_size) };
-        Some((
+        Ok((
             width as u32,
             height as u32,
             stride as u32,
@@ -120,7 +120,7 @@ pub fn WebPDecodeYUV(data: &[u8]) -> Option<(u32, u32, u32, u32, WebpYuvBox)> {
             yuv,
         ))
     } else {
-        None
+        Err(WebpUnknownError)
     }
 }
 
@@ -340,8 +340,8 @@ mod tests {
 
     #[test]
     fn test_get_info() {
-        assert_eq!(WebPGetInfo(data4_webp()), Some((1024, 772)));
-        assert_eq!(WebPGetInfo(data5_webp()), Some((1024, 752)));
+        assert_eq!(WebPGetInfo(data4_webp()), Ok((1024, 772)));
+        assert_eq!(WebPGetInfo(data5_webp()), Ok((1024, 752)));
     }
 
     #[test]
