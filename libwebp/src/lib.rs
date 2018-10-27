@@ -6,6 +6,10 @@ extern crate libc;
 extern crate libwebp_sys;
 
 #[cfg(test)]
+#[macro_use]
+extern crate approx;
+
+#[cfg(test)]
 extern crate png;
 
 pub mod boxed;
