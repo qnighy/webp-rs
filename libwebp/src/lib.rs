@@ -10,3 +10,6 @@ extern crate png;
 
 pub mod boxed;
 pub mod decode;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+pub struct WebpUnknownError;

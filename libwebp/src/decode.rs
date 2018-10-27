@@ -4,6 +4,7 @@ use std::ptr;
 use libwebp_sys as sys;
 
 use boxed::{WebpBox, WebpYuvBox};
+use WebpUnknownError;
 
 #[allow(non_snake_case)]
 pub fn WebPGetDecoderVersion() -> u32 {
@@ -123,9 +124,6 @@ pub fn WebPDecodeYUV(data: &[u8]) -> Result<(u32, u32, u32, u32, WebpYuvBox), We
         Err(WebpUnknownError)
     }
 }
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub struct WebpUnknownError;
 
 #[allow(non_snake_case)]
 pub fn WebPDecodeRGBAInto(
