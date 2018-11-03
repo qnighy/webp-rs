@@ -299,55 +299,95 @@ mod tests {
     fn test_decode_rgba() {
         let (width, height, data) = WebPDecodeRGBA(data4_webp()).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGBA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::RGBA) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height, data) = WebPDecodeRGBA(data5_webp()).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGBA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::RGBA) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
     fn test_decode_argb() {
         let (width, height, data) = WebPDecodeARGB(data4_webp()).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::ARGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::ARGB) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height, data) = WebPDecodeARGB(data5_webp()).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::ARGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::ARGB) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
     fn test_decode_bgra() {
         let (width, height, data) = WebPDecodeBGRA(data4_webp()).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGRA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::BGRA) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height, data) = WebPDecodeBGRA(data5_webp()).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGRA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::BGRA) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
     fn test_decode_rgb() {
         let (width, height, data) = WebPDecodeRGB(data4_webp()).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::RGB) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height, data) = WebPDecodeRGB(data5_webp()).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::RGB) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
     fn test_decode_bgr() {
         let (width, height, data) = WebPDecodeBGR(data4_webp()).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGR) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::BGR) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height, data) = WebPDecodeBGR(data5_webp()).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGR) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::BGR) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
@@ -383,13 +423,21 @@ mod tests {
         let mut data = vec![0; width as usize * height as usize * 4];
         WebPDecodeRGBAInto(data4_webp(), &mut data, width * 4).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGBA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::RGBA) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height) = WebPGetInfo(data5_webp()).unwrap();
         let mut data = vec![0; width as usize * height as usize * 4];
         WebPDecodeRGBAInto(data5_webp(), &mut data, width * 4).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGBA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::RGBA) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
@@ -398,13 +446,21 @@ mod tests {
         let mut data = vec![0; width as usize * height as usize * 4];
         WebPDecodeARGBInto(data4_webp(), &mut data, width * 4).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::ARGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::ARGB) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height) = WebPGetInfo(data5_webp()).unwrap();
         let mut data = vec![0; width as usize * height as usize * 4];
         WebPDecodeARGBInto(data5_webp(), &mut data, width * 4).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::ARGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::ARGB) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
@@ -413,13 +469,21 @@ mod tests {
         let mut data = vec![0; width as usize * height as usize * 4];
         WebPDecodeBGRAInto(data4_webp(), &mut data, width * 4).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGRA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::BGRA) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height) = WebPGetInfo(data5_webp()).unwrap();
         let mut data = vec![0; width as usize * height as usize * 4];
         WebPDecodeBGRAInto(data5_webp(), &mut data, width * 4).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGRA) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::BGRA) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
@@ -428,13 +492,21 @@ mod tests {
         let mut data = vec![0; width as usize * height as usize * 3];
         WebPDecodeRGBInto(data4_webp(), &mut data, width * 3).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::RGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::RGB) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height) = WebPGetInfo(data5_webp()).unwrap();
         let mut data = vec![0; width as usize * height as usize * 3];
         WebPDecodeRGBInto(data5_webp(), &mut data, width * 3).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::RGB) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::RGB) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
@@ -443,13 +515,21 @@ mod tests {
         let mut data = vec![0; width as usize * height as usize * 3];
         WebPDecodeBGRInto(data4_webp(), &mut data, width * 3).unwrap();
         assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &data4_expect(ColorOrder::BGR) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data4_expect(ColorOrder::BGR) as &[u8],
+            epsilon = 1
+        );
 
         let (width, height) = WebPGetInfo(data5_webp()).unwrap();
         let mut data = vec![0; width as usize * height as usize * 3];
         WebPDecodeBGRInto(data5_webp(), &mut data, width * 3).unwrap();
         assert_eq!((width, height), (1024, 752));
-        assert_eq!(&data as &[u8], &data5_expect(ColorOrder::BGR) as &[u8]);
+        assert_abs_diff_eq!(
+            &data as &[u8],
+            &data5_expect(ColorOrder::BGR) as &[u8],
+            epsilon = 1
+        );
     }
 
     #[test]
