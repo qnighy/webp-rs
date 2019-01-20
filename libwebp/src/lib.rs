@@ -15,6 +15,7 @@ extern crate png;
 pub mod boxed;
 pub mod decode;
 pub mod encode;
+mod ffi_utils;
 #[cfg(test)]
 mod test_utils;
 

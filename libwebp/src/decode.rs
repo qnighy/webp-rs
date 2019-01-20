@@ -4,7 +4,14 @@ use std::ptr;
 use libwebp_sys as sys;
 
 use boxed::{WebpBox, WebpYuvBox};
+use ffi_utils::check_int;
 use WebpUnknownError;
+
+macro_rules! check_int {
+    ($e:expr) => {
+        check_int($e, stringify!($e))
+    };
+}
 
 #[allow(non_snake_case)]
 pub fn WebPGetDecoderVersion() -> u32 {
@@ -137,7 +144,7 @@ pub fn WebPDecodeRGBAInto(
             data.len(),
             output_buffer.as_mut_ptr(),
             output_buffer.len(),
-            output_stride as c_int,
+            check_int!(output_stride),
         )
     };
     if !res.is_null() {
@@ -159,7 +166,7 @@ pub fn WebPDecodeARGBInto(
             data.len(),
             output_buffer.as_mut_ptr(),
             output_buffer.len(),
-            output_stride as c_int,
+            check_int!(output_stride),
         )
     };
     if !res.is_null() {
@@ -181,7 +188,7 @@ pub fn WebPDecodeBGRAInto(
             data.len(),
             output_buffer.as_mut_ptr(),
             output_buffer.len(),
-            output_stride as c_int,
+            check_int!(output_stride),
         )
     };
     if !res.is_null() {
@@ -203,7 +210,7 @@ pub fn WebPDecodeRGBInto(
             data.len(),
             output_buffer.as_mut_ptr(),
             output_buffer.len(),
-            output_stride as c_int,
+            check_int!(output_stride),
         )
     };
     if !res.is_null() {
@@ -225,7 +232,7 @@ pub fn WebPDecodeBGRInto(
             data.len(),
             output_buffer.as_mut_ptr(),
             output_buffer.len(),
-            output_stride as c_int,
+            check_int!(output_stride),
         )
     };
     if !res.is_null() {
@@ -251,13 +258,13 @@ pub fn WebPDecodeYUVInto(
             data.len(),
             luma.as_mut_ptr(),
             luma.len(),
-            luma_stride as c_int,
+            check_int!(luma_stride),
             u.as_mut_ptr(),
             u.len(),
-            u_stride as c_int,
+            check_int!(u_stride),
             v.as_mut_ptr(),
             v.len(),
-            v_stride as c_int,
+            check_int!(v_stride),
         )
     };
     if !res.is_null() {

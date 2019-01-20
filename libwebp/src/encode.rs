@@ -4,7 +4,14 @@ use std::ptr;
 use libwebp_sys as sys;
 
 use boxed::WebpBox;
+use ffi_utils::{check_int, check_stride};
 use WebpUnknownError;
+
+macro_rules! check_int {
+    ($e:expr) => {
+        check_int($e, stringify!($e))
+    };
+}
 
 #[allow(non_snake_case)]
 pub fn WebPEncodeRGB(
@@ -14,15 +21,14 @@ pub fn WebPEncodeRGB(
     stride: u32,
     quality_factor: f32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(rgb.len(), stride as usize * height as usize);
-    assert!(stride >= width * 3);
+    check_stride(rgb.len(), width, height, stride, 3);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeRGB(
             rgb.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             quality_factor as c_float,
             &mut output,
         )
@@ -42,15 +48,14 @@ pub fn WebPEncodeBGR(
     stride: u32,
     quality_factor: f32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(bgr.len(), stride as usize * height as usize);
-    assert!(stride >= width * 3);
+    check_stride(bgr.len(), width, height, stride, 3);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeBGR(
             bgr.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             quality_factor as c_float,
             &mut output,
         )
@@ -70,15 +75,14 @@ pub fn WebPEncodeRGBA(
     stride: u32,
     quality_factor: f32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(rgba.len(), stride as usize * height as usize);
-    assert!(stride >= width * 4);
+    check_stride(rgba.len(), width, height, stride, 4);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeRGBA(
             rgba.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             quality_factor as c_float,
             &mut output,
         )
@@ -98,15 +102,14 @@ pub fn WebPEncodeBGRA(
     stride: u32,
     quality_factor: f32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(bgra.len(), stride as usize * height as usize);
-    assert!(stride >= width * 4);
+    check_stride(bgra.len(), width, height, stride, 4);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeBGRA(
             bgra.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             quality_factor as c_float,
             &mut output,
         )
@@ -125,15 +128,14 @@ pub fn WebPEncodeLosslessRGB(
     height: u32,
     stride: u32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(rgb.len(), stride as usize * height as usize);
-    assert!(stride >= width * 3);
+    check_stride(rgb.len(), width, height, stride, 3);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeLosslessRGB(
             rgb.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             &mut output,
         )
     };
@@ -151,15 +153,14 @@ pub fn WebPEncodeLosslessBGR(
     height: u32,
     stride: u32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(bgr.len(), stride as usize * height as usize);
-    assert!(stride >= width * 3);
+    check_stride(bgr.len(), width, height, stride, 3);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeLosslessBGR(
             bgr.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             &mut output,
         )
     };
@@ -177,15 +178,14 @@ pub fn WebPEncodeLosslessRGBA(
     height: u32,
     stride: u32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(rgba.len(), stride as usize * height as usize);
-    assert!(stride >= width * 4);
+    check_stride(rgba.len(), width, height, stride, 4);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeLosslessRGBA(
             rgba.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             &mut output,
         )
     };
@@ -203,15 +203,14 @@ pub fn WebPEncodeLosslessBGRA(
     height: u32,
     stride: u32,
 ) -> Result<WebpBox<[u8]>, WebpUnknownError> {
-    assert_eq!(bgra.len(), stride as usize * height as usize);
-    assert!(stride >= width * 4);
+    check_stride(bgra.len(), width, height, stride, 4);
     let mut output: *mut u8 = ptr::null_mut();
     let res = unsafe {
         sys::WebPEncodeLosslessBGRA(
             bgra.as_ptr(),
-            width as c_int,
-            height as c_int,
-            stride as c_int,
+            check_int!(width),
+            check_int!(height),
+            check_int!(stride),
             &mut output,
         )
     };
