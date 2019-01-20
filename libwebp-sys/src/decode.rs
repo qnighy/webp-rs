@@ -35,8 +35,13 @@ pub enum WEBP_CSP_MODE {
     MODE_rgbA_4444 = 10,
     MODE_YUV = 11,
     MODE_YUVA = 12,
-    MODE_LAST = 13,
 }
+
+impl WEBP_CSP_MODE {
+    pub const MODE_LAST: c_int = 13;
+}
+
+pub const MODE_LAST: c_int = WEBP_CSP_MODE::MODE_LAST;
 
 #[allow(non_snake_case)]
 pub extern "C" fn WebPIsPremultipliedMode(mode: WEBP_CSP_MODE) -> c_int {

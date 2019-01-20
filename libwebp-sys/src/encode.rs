@@ -22,8 +22,13 @@ pub enum WebPImageHint {
     WEBP_HINT_PICTURE = 1,
     WEBP_HINT_PHOTO = 2,
     WEBP_HINT_GRAPH = 3,
-    WEBP_HINT_LAST = 4,
 }
+
+impl WebPImageHint {
+    pub const WEBP_HINT_LAST: c_int = 4;
+}
+
+pub const WEBP_HINT_LAST: c_int = WebPImageHint::WEBP_HINT_LAST;
 
 #[allow(non_snake_case)]
 #[repr(C)]
