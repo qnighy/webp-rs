@@ -4,8 +4,8 @@ use std::ptr;
 use libwebp_sys as sys;
 
 use boxed::WebpBox;
+use error::WebpUnknownError;
 use ffi_utils::{check_int, check_stride};
-use WebpUnknownError;
 
 macro_rules! check_int {
     ($e:expr) => {

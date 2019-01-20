@@ -15,9 +15,9 @@ extern crate png;
 pub mod boxed;
 pub mod decode;
 pub mod encode;
+mod error;
 mod ffi_utils;
 #[cfg(test)]
 mod test_utils;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
-pub struct WebpUnknownError;
+pub use error::WebpUnknownError;
