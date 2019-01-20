@@ -548,7 +548,8 @@ mod tests {
             uv_width,
             &mut v,
             uv_width,
-        ).unwrap();
+        )
+        .unwrap();
         assert_eq!(y[..], include_bytes!("../data/4.y.dat")[..]);
         assert_eq!(u[..], include_bytes!("../data/4.u.dat")[..]);
         assert_eq!(v[..], include_bytes!("../data/4.v.dat")[..]);
@@ -567,7 +568,8 @@ mod tests {
             uv_width,
             &mut v,
             uv_width,
-        ).unwrap();
+        )
+        .unwrap();
         assert_eq!(y[..], include_bytes!("../data/5.y.dat")[..]);
         assert_eq!(u[..], include_bytes!("../data/5.u.dat")[..]);
         assert_eq!(v[..], include_bytes!("../data/5.v.dat")[..]);

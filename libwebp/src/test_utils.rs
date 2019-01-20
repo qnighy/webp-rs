@@ -45,5 +45,6 @@ pub fn decode_png(data: &[u8], color_order: ColorOrder) -> Vec<u8> {
                     .chain(iter::once(r))
                     .chain(None),
             }
-        }).collect()
+        })
+        .collect()
 }
