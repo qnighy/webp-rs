@@ -43,11 +43,13 @@ impl<T> WebpBox<[T]> {
 impl<T: ?Sized> Drop for WebpBox<T> {
     #[cfg(not(feature = "0.5"))]
     fn drop(&mut self) {
-        use libc::c_void as libc_void;
-        use libc::free;
+        use std::os::raw::*;
+        extern "C" {
+            fn free(ptr: *mut c_void);
+        }
         unsafe {
             ptr::drop_in_place(self.ptr.as_ptr());
-            free(self.ptr.as_ptr() as *mut libc_void);
+            free(self.ptr.as_ptr() as *mut c_void);
         }
     }
 
