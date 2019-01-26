@@ -280,305 +280,161 @@ mod tests {
 
     use test_utils::*;
 
-    fn data4_webp() -> &'static [u8] {
-        include_bytes!("../data/4.webp")
-    }
-
-    fn data4_expect(color_order: ColorOrder) -> Vec<u8> {
-        decode_png(include_bytes!("../data/4.webp.png"), color_order)
-    }
-
-    fn data5_webp() -> &'static [u8] {
-        include_bytes!("../data/5.webp")
-    }
-
-    fn data5_expect(color_order: ColorOrder) -> Vec<u8> {
-        decode_png(include_bytes!("../data/5.webp.png"), color_order)
-    }
-
     #[test]
     fn test_get_info() {
-        assert_eq!(WebPGetInfo(data4_webp()), Ok((1024, 772)));
-        assert_eq!(WebPGetInfo(data5_webp()), Ok((1024, 752)));
+        for test_case in test_cases() {
+            let dim = WebPGetInfo(&test_case.webp_data).unwrap();
+            assert_eq!(dim, (test_case.image.width(), test_case.image.height()));
+        }
     }
 
     #[test]
     fn test_decode_rgba() {
-        let (width, height, data) = WebPDecodeRGBA(data4_webp()).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::RGBA) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height, data) = WebPDecodeRGBA(data5_webp()).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::RGBA) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height, data) = WebPDecodeRGBA(&test_case.webp_data).unwrap();
+            let image = Image::new(ColorType::RGBA, width, height, width * 4, data.to_vec());
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_argb() {
-        let (width, height, data) = WebPDecodeARGB(data4_webp()).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::ARGB) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height, data) = WebPDecodeARGB(data5_webp()).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::ARGB) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height, data) = WebPDecodeARGB(&test_case.webp_data).unwrap();
+            let image = Image::new(ColorType::ARGB, width, height, width * 4, data.to_vec());
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_bgra() {
-        let (width, height, data) = WebPDecodeBGRA(data4_webp()).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::BGRA) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height, data) = WebPDecodeBGRA(data5_webp()).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::BGRA) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height, data) = WebPDecodeBGRA(&test_case.webp_data).unwrap();
+            let image = Image::new(ColorType::BGRA, width, height, width * 4, data.to_vec());
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_rgb() {
-        let (width, height, data) = WebPDecodeRGB(data4_webp()).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::RGB) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height, data) = WebPDecodeRGB(data5_webp()).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::RGB) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height, data) = WebPDecodeRGB(&test_case.webp_data).unwrap();
+            let image = Image::new(ColorType::RGB, width, height, width * 3, data.to_vec());
+            assert_abs_diff_eq!(image, test_case.image_opaque, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_bgr() {
-        let (width, height, data) = WebPDecodeBGR(data4_webp()).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::BGR) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height, data) = WebPDecodeBGR(data5_webp()).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::BGR) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height, data) = WebPDecodeBGR(&test_case.webp_data).unwrap();
+            let image = Image::new(ColorType::BGR, width, height, width * 3, data.to_vec());
+            assert_abs_diff_eq!(image, test_case.image_opaque, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_yuv() {
-        fn stride_conv(v: &[u8], stride: usize, width: usize) -> Vec<u8> {
-            v.chunks(stride)
-                .flat_map(|chunk| &chunk[..width])
-                .cloned()
-                .collect()
+        for test_case in test_cases() {
+            let (width, height, y_stride, uv_stride, yuv) =
+                WebPDecodeYUV(&test_case.webp_data).unwrap();
+            let uv_width = (width + 1) / 2;
+            let uv_height = (height + 1) / 2;
+            let y = yuv.y().to_vec();
+            let u = yuv.u().to_vec();
+            let v = yuv.v().to_vec();
+            let y = Image::new(ColorType::Grayscale, width, height, y_stride, y);
+            let u = Image::new(ColorType::Grayscale, uv_width, uv_height, uv_stride, u);
+            let v = Image::new(ColorType::Grayscale, uv_width, uv_height, uv_stride, v);
+            assert_abs_diff_eq!(y, test_case.y_image, epsilon = 1);
+            assert_abs_diff_eq!(u, test_case.u_image, epsilon = 1);
+            assert_abs_diff_eq!(v, test_case.v_image, epsilon = 1);
         }
-        let (width, height, y_stride, uv_stride, yuv) = WebPDecodeYUV(data4_webp()).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        let y = stride_conv(yuv.y(), y_stride as usize, width as usize);
-        let u = stride_conv(yuv.u(), uv_stride as usize, (width as usize + 1) / 2);
-        let v = stride_conv(yuv.v(), uv_stride as usize, (width as usize + 1) / 2);
-        assert_eq!(y[..], include_bytes!("../data/4.y.dat")[..]);
-        assert_eq!(u[..], include_bytes!("../data/4.u.dat")[..]);
-        assert_eq!(v[..], include_bytes!("../data/4.v.dat")[..]);
-
-        let (width, height, y_stride, uv_stride, yuv) = WebPDecodeYUV(data5_webp()).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        let y = stride_conv(yuv.y(), y_stride as usize, width as usize);
-        let u = stride_conv(yuv.u(), uv_stride as usize, (width as usize + 1) / 2);
-        let v = stride_conv(yuv.v(), uv_stride as usize, (width as usize + 1) / 2);
-        assert_eq!(y[..], include_bytes!("../data/5.y.dat")[..]);
-        assert_eq!(u[..], include_bytes!("../data/5.u.dat")[..]);
-        assert_eq!(v[..], include_bytes!("../data/5.v.dat")[..]);
     }
 
     #[test]
     fn test_decode_rgba_into() {
-        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 4];
-        WebPDecodeRGBAInto(data4_webp(), &mut data, width * 4).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::RGBA) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 4];
-        WebPDecodeRGBAInto(data5_webp(), &mut data, width * 4).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::RGBA) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height) = WebPGetInfo(&test_case.webp_data).unwrap();
+            let mut data = vec![0; width as usize * height as usize * 4];
+            WebPDecodeRGBAInto(&test_case.webp_data, &mut data, width * 4).unwrap();
+            let image = Image::new(ColorType::RGBA, width, height, width * 4, data);
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_argb_into() {
-        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 4];
-        WebPDecodeARGBInto(data4_webp(), &mut data, width * 4).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::ARGB) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 4];
-        WebPDecodeARGBInto(data5_webp(), &mut data, width * 4).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::ARGB) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height) = WebPGetInfo(&test_case.webp_data).unwrap();
+            let mut data = vec![0; width as usize * height as usize * 4];
+            WebPDecodeARGBInto(&test_case.webp_data, &mut data, width * 4).unwrap();
+            let image = Image::new(ColorType::ARGB, width, height, width * 4, data);
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_bgra_into() {
-        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 4];
-        WebPDecodeBGRAInto(data4_webp(), &mut data, width * 4).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::BGRA) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 4];
-        WebPDecodeBGRAInto(data5_webp(), &mut data, width * 4).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::BGRA) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height) = WebPGetInfo(&test_case.webp_data).unwrap();
+            let mut data = vec![0; width as usize * height as usize * 4];
+            WebPDecodeBGRAInto(&test_case.webp_data, &mut data, width * 4).unwrap();
+            let image = Image::new(ColorType::BGRA, width, height, width * 4, data);
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_rgb_into() {
-        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 3];
-        WebPDecodeRGBInto(data4_webp(), &mut data, width * 3).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::RGB) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 3];
-        WebPDecodeRGBInto(data5_webp(), &mut data, width * 3).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::RGB) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height) = WebPGetInfo(&test_case.webp_data).unwrap();
+            let mut data = vec![0; width as usize * height as usize * 3];
+            WebPDecodeRGBInto(&test_case.webp_data, &mut data, width * 3).unwrap();
+            let image = Image::new(ColorType::RGB, width, height, width * 3, data);
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_bgr_into() {
-        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 3];
-        WebPDecodeBGRInto(data4_webp(), &mut data, width * 3).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data4_expect(ColorOrder::BGR) as &[u8],
-            epsilon = 1
-        );
-
-        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
-        let mut data = vec![0; width as usize * height as usize * 3];
-        WebPDecodeBGRInto(data5_webp(), &mut data, width * 3).unwrap();
-        assert_eq!((width, height), (1024, 752));
-        assert_abs_diff_eq!(
-            &data as &[u8],
-            &data5_expect(ColorOrder::BGR) as &[u8],
-            epsilon = 1
-        );
+        for test_case in test_cases() {
+            let (width, height) = WebPGetInfo(&test_case.webp_data).unwrap();
+            let mut data = vec![0; width as usize * height as usize * 3];
+            WebPDecodeBGRInto(&test_case.webp_data, &mut data, width * 3).unwrap();
+            let image = Image::new(ColorType::BGR, width, height, width * 3, data);
+            assert_abs_diff_eq!(image, test_case.image, epsilon = 1);
+        }
     }
 
     #[test]
     fn test_decode_yuv_into() {
-        let (width, height) = WebPGetInfo(data4_webp()).unwrap();
-        let uv_width = (width + 1) / 2;
-        let uv_height = (height + 1) / 2;
-        let mut y = vec![0; width as usize * height as usize];
-        let mut u = vec![0; uv_width as usize * uv_height as usize];
-        let mut v = vec![0; uv_width as usize * uv_height as usize];
-        WebPDecodeYUVInto(
-            data4_webp(),
-            &mut y,
-            width,
-            &mut u,
-            uv_width,
-            &mut v,
-            uv_width,
-        )
-        .unwrap();
-        assert_eq!(y[..], include_bytes!("../data/4.y.dat")[..]);
-        assert_eq!(u[..], include_bytes!("../data/4.u.dat")[..]);
-        assert_eq!(v[..], include_bytes!("../data/4.v.dat")[..]);
-
-        let (width, height) = WebPGetInfo(data5_webp()).unwrap();
-        let uv_width = (width + 1) / 2;
-        let uv_height = (height + 1) / 2;
-        let mut y = vec![0; width as usize * height as usize];
-        let mut u = vec![0; uv_width as usize * uv_height as usize];
-        let mut v = vec![0; uv_width as usize * uv_height as usize];
-        WebPDecodeYUVInto(
-            data5_webp(),
-            &mut y,
-            width,
-            &mut u,
-            uv_width,
-            &mut v,
-            uv_width,
-        )
-        .unwrap();
-        assert_eq!(y[..], include_bytes!("../data/5.y.dat")[..]);
-        assert_eq!(u[..], include_bytes!("../data/5.u.dat")[..]);
-        assert_eq!(v[..], include_bytes!("../data/5.v.dat")[..]);
+        for test_case in test_cases() {
+            let (width, height) = WebPGetInfo(&test_case.webp_data).unwrap();
+            let uv_width = (width + 1) / 2;
+            let uv_height = (height + 1) / 2;
+            let y_stride = width;
+            let u_stride = uv_width;
+            let v_stride = uv_width;
+            let mut y = vec![0; y_stride as usize * height as usize];
+            let mut u = vec![0; u_stride as usize * uv_height as usize];
+            let mut v = vec![0; v_stride as usize * uv_height as usize];
+            WebPDecodeYUVInto(
+                &test_case.webp_data,
+                &mut y,
+                y_stride,
+                &mut u,
+                u_stride,
+                &mut v,
+                v_stride,
+            )
+            .unwrap();
+            let y = Image::new(ColorType::Grayscale, width, height, y_stride, y);
+            let u = Image::new(ColorType::Grayscale, uv_width, uv_height, u_stride, u);
+            let v = Image::new(ColorType::Grayscale, uv_width, uv_height, v_stride, v);
+            assert_abs_diff_eq!(y, test_case.y_image, epsilon = 1);
+            assert_abs_diff_eq!(u, test_case.u_image, epsilon = 1);
+            assert_abs_diff_eq!(v, test_case.v_image, epsilon = 1);
+        }
     }
 }

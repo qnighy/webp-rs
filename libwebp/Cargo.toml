@@ -11,6 +11,7 @@ libwebp-sys = { path = "../libwebp-sys" }
 [dev-dependencies]
 approx = "0.3.0"
 png = "0.13.1"
+lazy_static = "1.2.0"
 
 [features]
 default = []

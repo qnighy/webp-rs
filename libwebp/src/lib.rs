@@ -11,6 +11,9 @@ extern crate approx;
 
 #[cfg(test)]
 extern crate png;
+#[cfg(test)]
+#[macro_use]
+extern crate lazy_static;
 
 pub mod boxed;
 pub mod decode;
