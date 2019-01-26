@@ -21,12 +21,12 @@ pub(crate) fn test_cases() -> &'static [TestCase] {
             ];
             data.iter()
                 .map(|&(png, webp, y_png, u_png, v_png)| {
-                    let image = decode_png2(png);
+                    let image = decode_png(png);
                     let image_opaque = image.to_opaque();
                     let webp_data = webp.to_vec();
-                    let y_image = decode_png2(y_png);
-                    let u_image = decode_png2(u_png);
-                    let v_image = decode_png2(v_png);
+                    let y_image = decode_png(y_png);
+                    let u_image = decode_png(u_png);
+                    let v_image = decode_png(v_png);
                     TestCase {
                         image,
                         image_opaque,
@@ -91,6 +91,14 @@ impl Image {
         self.height
     }
 
+    pub(crate) fn stride(&self) -> u32 {
+        self.stride
+    }
+
+    pub(crate) fn data(&self) -> &[u8] {
+        &self.data
+    }
+
     pub(crate) fn to_opaque(&self) -> Image {
         let mut this = self.clone();
         this.make_opaque();
@@ -113,6 +121,31 @@ impl Image {
                 }
             }
         }
+    }
+
+    pub(crate) fn convert_auto_stride(&self, new_color_type: ColorType) -> Image {
+        self.convert(
+            new_color_type,
+            new_color_type.byte_len() as u32 * self.width,
+        )
+    }
+    pub(crate) fn convert(&self, new_color_type: ColorType, new_stride: u32) -> Image {
+        assert!(new_stride as usize / new_color_type.byte_len() >= self.width as usize);
+        let mut data = vec![0_u8; new_stride as usize * self.height as usize];
+
+        let pixel_len = self.color_type.byte_len();
+        let new_pixel_len = new_color_type.byte_len();
+        for y in 0..self.height as usize {
+            let line = &self.data[y * self.stride as usize..(y + 1) * self.stride as usize];
+            let new_line = &mut data[y * new_stride as usize..(y + 1) * new_stride as usize];
+            for x in 0..self.width as usize {
+                let pixel = &line[x * pixel_len..(x + 1) * pixel_len];
+                let pixel = self.color_type.convert_rgba(pixel);
+                let new_pixel = &mut new_line[x * new_pixel_len..(x + 1) * new_pixel_len];
+                new_color_type.convert_from_rgba(new_pixel, pixel);
+            }
+        }
+        Image::new(new_color_type, self.width, self.height, new_stride, data)
     }
 
     fn eq_general<F: FnMut([u8; 4], [u8; 4]) -> bool>(&self, other: &Image, mut f: F) -> bool {
@@ -197,9 +230,52 @@ impl ColorType {
             Grayscale => [data[0], data[0], data[0], 255],
         }
     }
+
+    pub(crate) fn convert_from_rgba(&self, data: &mut [u8], rgba: [u8; 4]) {
+        use self::ColorType::*;
+        match *self {
+            RGBA => {
+                data[0] = rgba[0];
+                data[1] = rgba[1];
+                data[2] = rgba[2];
+                data[3] = rgba[3];
+            }
+            BGRA => {
+                data[0] = rgba[2];
+                data[1] = rgba[1];
+                data[2] = rgba[0];
+                data[3] = rgba[3];
+            }
+            ARGB => {
+                data[0] = rgba[3];
+                data[1] = rgba[0];
+                data[2] = rgba[1];
+                data[3] = rgba[2];
+            }
+            RGB => {
+                data[0] = rgba[0];
+                data[1] = rgba[1];
+                data[2] = rgba[2];
+            }
+            BGR => {
+                data[0] = rgba[2];
+                data[1] = rgba[1];
+                data[2] = rgba[0];
+            }
+            GrayscaleAlpha => {
+                let luma = ((rgba[0] as i32 + rgba[1] as i32 + rgba[2] as i32) / 3) as u8;
+                data[0] = luma;
+                data[1] = rgba[3];
+            }
+            Grayscale => {
+                let luma = ((rgba[0] as i32 + rgba[1] as i32 + rgba[2] as i32) / 3) as u8;
+                data[0] = luma;
+            }
+        }
+    }
 }
 
-fn decode_png2(data: &[u8]) -> Image {
+pub(crate) fn decode_png(data: &[u8]) -> Image {
     use png::{self, Decoder};
     use std::io::Cursor;
     let (info, mut r) = Decoder::new(Cursor::new(data)).read_info().unwrap();
@@ -227,42 +303,14 @@ pub(crate) fn save_png(image: &Image, color_type: png::ColorType, path: &str) {
     use std::fs::File;
     use std::io::{self, BufWriter, Write};
 
-    let samples = color_type.samples();
-    let pixel_len = image.color_type.byte_len();
-    let mut data = vec![0_u8; image.width as usize * image.height as usize * pixel_len];
-    for y in 0..image.height as usize {
-        let line_dest =
-            &mut data[y * image.width as usize * samples..(y + 1) * image.width as usize * samples];
-        let line = &image.data[y * image.stride as usize..(y + 1) * image.stride as usize];
-        for x in 0..image.width as usize {
-            let pix_dest = &mut line_dest[x * samples..(x + 1) * samples];
-            let pix = &line[x * pixel_len..(x + 1) * pixel_len];
-            let pix = image.color_type.convert_rgba(pix);
-            match color_type {
-                png::ColorType::RGBA => {
-                    pix_dest[0] = pix[0];
-                    pix_dest[1] = pix[1];
-                    pix_dest[2] = pix[2];
-                    pix_dest[3] = pix[3];
-                }
-                png::ColorType::RGB => {
-                    pix_dest[0] = pix[0];
-                    pix_dest[1] = pix[1];
-                    pix_dest[2] = pix[2];
-                }
-                png::ColorType::GrayscaleAlpha => {
-                    let luma = ((pix[0] as i32 + pix[1] as i32 + pix[2] as i32) / 3) as u8;
-                    pix_dest[0] = luma;
-                    pix_dest[1] = pix[3];
-                }
-                png::ColorType::Grayscale => {
-                    let luma = ((pix[0] as i32 + pix[1] as i32 + pix[2] as i32) / 3) as u8;
-                    pix_dest[0] = luma;
-                }
-                png::ColorType::Indexed => unimplemented!(),
-            }
-        }
-    }
+    let conv_color_type = match color_type {
+        png::ColorType::RGBA => ColorType::RGBA,
+        png::ColorType::RGB => ColorType::RGB,
+        png::ColorType::GrayscaleAlpha => ColorType::GrayscaleAlpha,
+        png::ColorType::Grayscale => ColorType::Grayscale,
+        png::ColorType::Indexed => unimplemented!(),
+    };
+    let image = image.convert_auto_stride(conv_color_type);
 
     let f = File::create(path).unwrap();
     let mut f = BufWriter::new(f);
@@ -271,59 +319,8 @@ pub(crate) fn save_png(image: &Image, color_type: png::ColorType, path: &str) {
         let mut enc = png::Encoder::new(&mut f, image.width, image.height);
         enc.set(color_type).set(png::BitDepth::Eight);
         let mut enc = enc.write_header().unwrap();
-        enc.write_image_data(&data);
+        enc.write_image_data(&image.data);
     }
 
     f.flush().unwrap();
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-pub enum ColorOrder {
-    RGBA,
-    ARGB,
-    BGRA,
-    RGB,
-    BGR,
-}
-
-pub fn decode_png(data: &[u8], color_order: ColorOrder) -> Vec<u8> {
-    use png::{ColorType, Decoder};
-    use std::io::Cursor;
-    use std::iter;
-    let (info, mut r) = Decoder::new(Cursor::new(data)).read_info().unwrap();
-    let mut buf = vec![0; info.buffer_size()];
-    r.next_frame(&mut buf).unwrap();
-    buf.chunks(info.color_type.samples())
-        .flat_map(|chunk| {
-            let (r, g, b, a) = match info.color_type {
-                ColorType::Grayscale => (chunk[0], chunk[0], chunk[0], 255),
-                ColorType::RGB => (chunk[0], chunk[1], chunk[2], 255),
-                ColorType::Indexed => unimplemented!(),
-                ColorType::GrayscaleAlpha => (chunk[0], chunk[0], chunk[0], chunk[1]),
-                ColorType::RGBA => (chunk[0], chunk[1], chunk[2], chunk[3]),
-            };
-            match color_order {
-                ColorOrder::RGBA => iter::once(r)
-                    .chain(iter::once(g))
-                    .chain(iter::once(b))
-                    .chain(Some(a)),
-                ColorOrder::ARGB => iter::once(a)
-                    .chain(iter::once(r))
-                    .chain(iter::once(g))
-                    .chain(Some(b)),
-                ColorOrder::BGRA => iter::once(b)
-                    .chain(iter::once(g))
-                    .chain(iter::once(r))
-                    .chain(Some(a)),
-                ColorOrder::RGB => iter::once(r)
-                    .chain(iter::once(g))
-                    .chain(iter::once(b))
-                    .chain(None),
-                ColorOrder::BGR => iter::once(b)
-                    .chain(iter::once(g))
-                    .chain(iter::once(r))
-                    .chain(None),
-            }
-        })
-        .collect()
 }

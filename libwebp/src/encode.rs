@@ -228,79 +228,135 @@ mod tests {
     use decode::*;
     use test_utils::*;
 
-    fn data4_input(color_order: ColorOrder) -> Vec<u8> {
-        decode_png(include_bytes!("../data/4.png"), color_order)
+    fn pngs() -> &'static [Image] {
+        lazy_static! {
+            static ref PNGS: Vec<Image> = {
+                vec![
+                    decode_png(include_bytes!("../data/4.png")),
+                    decode_png(include_bytes!("../data/5.png")),
+                ]
+            };
+        }
+        &PNGS
+    }
+    fn from_webp(webp: &[u8]) -> Image {
+        let (width, height, data) = WebPDecodeRGBA(webp).unwrap();
+        Image::new(ColorType::RGBA, width, height, width * 4, data.to_vec())
     }
 
     #[test]
     fn test_encode_rgb() {
-        let orig_data = data4_input(ColorOrder::RGB);
-        let webp = WebPEncodeRGB(&orig_data, 1024, 772, 1024 * 3, 75.0).unwrap();
-        let (width, height, data) = WebPDecodeRGB(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(&data as &[u8], &orig_data as &[u8], epsilon = 128);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::RGB);
+            let webp = WebPEncodeRGB(
+                &image.data(),
+                image.width(),
+                image.height(),
+                image.stride(),
+                75.0,
+            )
+            .unwrap();
+            assert_abs_diff_eq!(from_webp(&webp), image, epsilon = 128);
+        }
     }
 
     #[test]
     fn test_encode_bgr() {
-        let orig_data = data4_input(ColorOrder::BGR);
-        let webp = WebPEncodeBGR(&orig_data, 1024, 772, 1024 * 3, 75.0).unwrap();
-        let (width, height, data) = WebPDecodeBGR(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(&data as &[u8], &orig_data as &[u8], epsilon = 128);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::BGR);
+            let webp = WebPEncodeBGR(
+                &image.data(),
+                image.width(),
+                image.height(),
+                image.stride(),
+                75.0,
+            )
+            .unwrap();
+            assert_abs_diff_eq!(from_webp(&webp), image, epsilon = 128);
+        }
     }
 
     #[test]
     fn test_encode_rgba() {
-        let orig_data = data4_input(ColorOrder::RGBA);
-        let webp = WebPEncodeRGBA(&orig_data, 1024, 772, 1024 * 4, 75.0).unwrap();
-        let (width, height, data) = WebPDecodeRGBA(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(&data as &[u8], &orig_data as &[u8], epsilon = 128);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::RGBA);
+            let webp = WebPEncodeRGBA(
+                &image.data(),
+                image.width(),
+                image.height(),
+                image.stride(),
+                75.0,
+            )
+            .unwrap();
+            assert_abs_diff_eq!(from_webp(&webp), image, epsilon = 128);
+        }
     }
 
     #[test]
     fn test_encode_bgra() {
-        let orig_data = data4_input(ColorOrder::BGRA);
-        let webp = WebPEncodeBGRA(&orig_data, 1024, 772, 1024 * 4, 75.0).unwrap();
-        let (width, height, data) = WebPDecodeBGRA(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_abs_diff_eq!(&data as &[u8], &orig_data as &[u8], epsilon = 128);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::BGRA);
+            let webp = WebPEncodeBGRA(
+                &image.data(),
+                image.width(),
+                image.height(),
+                image.stride(),
+                75.0,
+            )
+            .unwrap();
+            assert_abs_diff_eq!(from_webp(&webp), image, epsilon = 128);
+        }
     }
 
     #[test]
     fn test_encode_lossless_rgb() {
-        let orig_data = data4_input(ColorOrder::RGB);
-        let webp = WebPEncodeLosslessRGB(&orig_data, 1024, 772, 1024 * 3).unwrap();
-        let (width, height, data) = WebPDecodeRGB(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &orig_data as &[u8]);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::RGB);
+            let webp =
+                WebPEncodeLosslessRGB(&image.data(), image.width(), image.height(), image.stride())
+                    .unwrap();
+            assert_eq!(from_webp(&webp), image);
+        }
     }
 
     #[test]
     fn test_encode_lossless_bgr() {
-        let orig_data = data4_input(ColorOrder::BGR);
-        let webp = WebPEncodeLosslessBGR(&orig_data, 1024, 772, 1024 * 3).unwrap();
-        let (width, height, data) = WebPDecodeBGR(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &orig_data as &[u8]);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::BGR);
+            let webp =
+                WebPEncodeLosslessBGR(&image.data(), image.width(), image.height(), image.stride())
+                    .unwrap();
+            assert_eq!(from_webp(&webp), image);
+        }
     }
 
     #[test]
     fn test_encode_lossless_rgba() {
-        let orig_data = data4_input(ColorOrder::RGBA);
-        let webp = WebPEncodeLosslessRGBA(&orig_data, 1024, 772, 1024 * 4).unwrap();
-        let (width, height, data) = WebPDecodeRGBA(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &orig_data as &[u8]);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::RGBA);
+            let webp = WebPEncodeLosslessRGBA(
+                &image.data(),
+                image.width(),
+                image.height(),
+                image.stride(),
+            )
+            .unwrap();
+            assert_eq!(from_webp(&webp), image);
+        }
     }
 
     #[test]
     fn test_encode_lossless_bgra() {
-        let orig_data = data4_input(ColorOrder::BGRA);
-        let webp = WebPEncodeLosslessBGRA(&orig_data, 1024, 772, 1024 * 4).unwrap();
-        let (width, height, data) = WebPDecodeBGRA(&webp).unwrap();
-        assert_eq!((width, height), (1024, 772));
-        assert_eq!(&data as &[u8], &orig_data as &[u8]);
+        for image in pngs() {
+            let image = image.convert_auto_stride(ColorType::BGRA);
+            let webp = WebPEncodeLosslessBGRA(
+                &image.data(),
+                image.width(),
+                image.height(),
+                image.stride(),
+            )
+            .unwrap();
+            assert_eq!(from_webp(&webp), image);
+        }
     }
 }
