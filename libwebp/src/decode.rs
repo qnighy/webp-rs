@@ -1,3 +1,4 @@
+use std::fmt;
 use std::marker::PhantomData;
 use std::mem;
 use std::os::raw::*;
@@ -323,6 +324,18 @@ impl WebPDecBuffer {
     }
 }
 
+impl fmt::Debug for WebPDecBuffer {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO: debug-output u
+        f.debug_struct("WebPDecBuffer")
+            .field("colorspace", &self.0.colorspace)
+            .field("width", &self.0.width)
+            .field("height", &self.0.height)
+            .field("is_external_memory", &self.0.is_external_memory)
+            .finish()
+    }
+}
+
 #[allow(non_snake_case)]
 pub fn WebPInitDecBuffer() -> Result<WebPDecBuffer, WebpUnknownError> {
     // TODO: use MaybeUninit (MSRV >= nightly)
@@ -347,11 +360,17 @@ impl<'a> Drop for WebPIDecoder<'a> {
 }
 
 impl<'a> WebPIDecoder<'a> {
-    fn as_ptr(&self) -> *const sys::WebPIDecoder {
+    pub fn as_ptr(&self) -> *const sys::WebPIDecoder {
         self.0.as_ptr() as *const sys::WebPIDecoder
     }
-    fn as_mut_ptr(&mut self) -> *mut sys::WebPIDecoder {
+    pub fn as_mut_ptr(&mut self) -> *mut sys::WebPIDecoder {
         self.0.as_ptr()
+    }
+}
+
+impl<'a> fmt::Debug for WebPIDecoder<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("WebPIDecoder { ... }")
     }
 }
 
@@ -638,6 +657,18 @@ impl WebPBitstreamFeatures {
             2 => WebPBitstreamFormat::LOSSLESS,
             _ => unreachable!(),
         }
+    }
+}
+
+impl<'a> fmt::Debug for WebPBitstreamFeatures {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("WebPBitstreamFeatures")
+            .field("width", &self.width())
+            .field("height", &self.height())
+            .field("has_alpha", &self.has_alpha())
+            .field("has_animation", &self.has_animation())
+            .field("format", &self.format())
+            .finish()
     }
 }
 
