@@ -19,7 +19,7 @@ cfg_if! {
 pub struct WebPIDecoder(c_void);
 
 #[allow(non_camel_case_types)]
-#[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(C)]
 pub enum WEBP_CSP_MODE {
     MODE_RGB = 0,
@@ -107,6 +107,7 @@ pub union WebPDecBufferUnion {
 }
 
 #[allow(non_camel_case_types)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(C)]
 pub enum VP8StatusCode {
     VP8_STATUS_OK = 0,
