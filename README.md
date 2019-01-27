@@ -17,7 +17,7 @@ The `libwebp` crate has three features:
 - `0.6`: use APIs >= libwebp-0.6.0. Assumes `0.5`.
 - `bundled`: compiles the bundled libwebp C library. Requires the `cc` crate. Automatically assumes `0.6`.
 
-The interface is similar to the raw interface, but with these modifications:
+The interface is similar to [the C++ API](https://developers.google.com/speed/webp/docs/api), but with these modifications:
 
 - Multiple values are returned as tuples, not through return-pointers. Return-pointer parameters are eliminated.
 - Pairs of pointers and lengths are combined into slice parameters.
