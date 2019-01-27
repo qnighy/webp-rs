@@ -1,4 +1,5 @@
 use approx::AbsDiffEq;
+use png;
 
 pub(crate) fn test_cases() -> &'static [TestCase] {
     lazy_static! {
