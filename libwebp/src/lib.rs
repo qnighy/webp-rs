@@ -13,12 +13,15 @@ extern crate png;
 #[macro_use]
 extern crate lazy_static;
 
-pub mod boxed;
-pub mod decode;
-pub mod encode;
+pub use boxed::*;
+pub use decode::*;
+pub use encode::*;
+pub use error::*;
+
+mod boxed;
+mod decode;
+mod encode;
 mod error;
 mod ffi_utils;
 #[cfg(test)]
 mod test_utils;
-
-pub use error::WebpUnknownError;
