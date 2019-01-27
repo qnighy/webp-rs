@@ -39,6 +39,7 @@ impl<T> WebpBox<[T]> {
     }
 }
 
+// TODO: MSRV >= nightly
 // unsafe impl<#[may_dangle] T: ?Sized> Drop for WebpBox<T> {
 impl<T: ?Sized> Drop for WebpBox<T> {
     #[cfg(not(feature = "0.5"))]

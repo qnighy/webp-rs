@@ -302,7 +302,7 @@ pub fn WebPIsRGBMode(mode: WEBP_CSP_MODE) -> bool {
     mode < MODE_YUV
 }
 
-#[repr(transparent)]
+// #[repr(transparent)] // TODO: MSRV >= 1.28.0
 pub struct WebPDecBuffer(sys::WebPDecBuffer);
 
 impl Drop for WebPDecBuffer {
@@ -325,7 +325,7 @@ impl WebPDecBuffer {
 
 #[allow(non_snake_case)]
 pub fn WebPInitDecBuffer() -> Result<WebPDecBuffer, WebpUnknownError> {
-    // TODO: use MaybeUninit
+    // TODO: use MaybeUninit (MSRV >= nightly)
     let mut buffer = unsafe { mem::uninitialized() };
     let res = unsafe { sys::WebPInitDecBuffer(&mut buffer) };
     if res != 0 {
