@@ -909,11 +909,17 @@ mod tests {
         assert_eq!(feature.has_animation(), false);
         assert_eq!(feature.format(), WebPBitstreamFormat::LOSSY);
 
-        assert_eq!(WebPGetFeatures(&data[..16]).err(), Some(VP8StatusCode::VP8_STATUS_NOT_ENOUGH_DATA));
+        assert_eq!(
+            WebPGetFeatures(&data[..16]).err(),
+            Some(VP8StatusCode::VP8_STATUS_NOT_ENOUGH_DATA)
+        );
 
         let data = b"\
             RIFFV\x00\x00\x00WEBPVP8\x20\
             K\x00\x00\x00\xD0\x01\x00\x9D\x01*\x03\x00\x02\x00\x02\x00";
-        assert_eq!(WebPGetFeatures(data).err(), Some(VP8StatusCode::VP8_STATUS_BITSTREAM_ERROR));
+        assert_eq!(
+            WebPGetFeatures(data).err(),
+            Some(VP8StatusCode::VP8_STATUS_BITSTREAM_ERROR)
+        );
     }
 }
