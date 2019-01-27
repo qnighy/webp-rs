@@ -611,6 +611,54 @@ pub fn WebPIDecodedArea<'a, 'b>(
     }
 }
 
+// #[repr(transparent)] // TODO: MSRV >= 1.28.0
+pub struct WebPBitstreamFeatures(sys::WebPBitstreamFeatures);
+
+impl WebPBitstreamFeatures {
+    pub fn width(&self) -> u32 {
+        self.0.width as u32
+    }
+
+    pub fn height(&self) -> u32 {
+        self.0.height as u32
+    }
+
+    pub fn has_alpha(&self) -> bool {
+        self.0.has_alpha != 0
+    }
+
+    pub fn has_animation(&self) -> bool {
+        self.0.has_animation != 0
+    }
+
+    pub fn format(&self) -> WebPBitstreamFormat {
+        match self.0.format {
+            0 => WebPBitstreamFormat::UNDEFINED,
+            1 => WebPBitstreamFormat::LOSSY,
+            2 => WebPBitstreamFormat::LOSSLESS,
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+pub enum WebPBitstreamFormat {
+    UNDEFINED = 0,
+    LOSSY = 1,
+    LOSSLESS = 2,
+}
+
+#[allow(non_snake_case)]
+pub fn WebPGetFeatures(data: &[u8]) -> Result<WebPBitstreamFeatures, VP8StatusCode> {
+    let mut features: WebPBitstreamFeatures = unsafe { mem::uninitialized() };
+    let res = unsafe { sys::WebPGetFeatures(data.as_ptr(), data.len(), &mut features.0) };
+    if res == VP8StatusCode::VP8_STATUS_OK {
+        Ok(features)
+    } else {
+        Err(res)
+    }
+}
+
 // TODO: wrappers for advanced decoding functions
 
 #[cfg(test)]
@@ -812,5 +860,29 @@ mod tests {
             let image = Image::new(ColorType::RGBA, width, height, stride, data.to_vec());
             assert_abs_diff_eq!(image, test_case.image_opaque, epsilon = 1);
         }
+    }
+
+    #[test]
+    fn test_get_features() {
+        let data = b"\
+            RIFFV\x00\x00\x00WEBPVP8\x20\
+            J\x00\x00\x00\xD0\x01\x00\x9D\x01*\x03\x00\x02\x00\x02\x00\
+            4%\xA8\x02t\x01\x0E\xFE\x03\x8E\x00\x00\xFE\xAD\xFF\xF1\
+            \x5C\xB4\xF8\xED\xFF\xF0\xC0\xBA\xBF\x93\x05\xEA\x0C\x9F\x93?\
+            \xE8\xC0\xBF?\xFF\xA9\xBF\xFF${\xCB\xFFF\x05\xF9\xFF\
+            \xFDM\xFE0\xE5\x86\xAA\x071#o\x00\x00\x00";
+        let feature = WebPGetFeatures(&data[..32]).unwrap();
+        assert_eq!(feature.width(), 3);
+        assert_eq!(feature.height(), 2);
+        assert_eq!(feature.has_alpha(), false);
+        assert_eq!(feature.has_animation(), false);
+        assert_eq!(feature.format(), WebPBitstreamFormat::LOSSY);
+
+        assert_eq!(WebPGetFeatures(&data[..16]).err(), Some(VP8StatusCode::VP8_STATUS_NOT_ENOUGH_DATA));
+
+        let data = b"\
+            RIFFV\x00\x00\x00WEBPVP8\x20\
+            K\x00\x00\x00\xD0\x01\x00\x9D\x01*\x03\x00\x02\x00\x02\x00";
+        assert_eq!(WebPGetFeatures(data).err(), Some(VP8StatusCode::VP8_STATUS_BITSTREAM_ERROR));
     }
 }
