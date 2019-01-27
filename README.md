@@ -44,7 +44,7 @@ fn main() {
     let (width, height, data) = WebPDecodeRGBA(data).unwrap();
     assert_eq!((width, height), (3, 2));
     assert_abs_diff_eq!(data[0], 67, epsilon = 1);
-# }
+}
 ```
 
 ### `libwebp-sys`
