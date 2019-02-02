@@ -617,9 +617,13 @@ pub fn WebPIAppend<'a>(idec: &mut WebPIDecoder<'a>, data: &[u8]) -> VP8StatusCod
     unsafe { sys::WebPIAppend(idec.as_mut_ptr(), data.as_ptr(), data.len()) }
 }
 
-// TODO: this isn't fully usable
+// NOTE: it's OK that `data` is an ephemeral reference,
+// because only `WebPIAppend` and `WebPIUpdate` will touch the buffer,
+// but `WebPIAppend` after `WebPIUpdate` is forbidden
+// and `WebPIUpdate` after `WebPIUpdate` will override the old buffer
+// with the newly supplied one.
 #[allow(non_snake_case)]
-pub fn WebPIUpdate<'a>(idec: &mut WebPIDecoder<'a>, data: &'a [u8]) -> VP8StatusCode {
+pub fn WebPIUpdate<'a>(idec: &mut WebPIDecoder<'a>, data: &[u8]) -> VP8StatusCode {
     unsafe { sys::WebPIUpdate(idec.as_mut_ptr(), data.as_ptr(), data.len()) }
 }
 
