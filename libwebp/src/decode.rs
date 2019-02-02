@@ -304,9 +304,9 @@ pub fn WebPIsRGBMode(mode: WEBP_CSP_MODE) -> bool {
 }
 
 // #[repr(transparent)] // TODO: MSRV >= 1.28.0
-pub struct WebPDecBuffer(sys::WebPDecBuffer);
+pub struct WebPDecBuffer<'a>(sys::WebPDecBuffer, PhantomData<&'a mut ()>);
 
-impl Drop for WebPDecBuffer {
+impl<'a> Drop for WebPDecBuffer<'a> {
     fn drop(&mut self) {
         unsafe {
             sys::WebPFreeDecBuffer(&mut self.0);
@@ -314,17 +314,138 @@ impl Drop for WebPDecBuffer {
     }
 }
 
-impl WebPDecBuffer {
+impl<'a> WebPDecBuffer<'a> {
     pub fn colorspace(&self) -> WEBP_CSP_MODE {
         self.0.colorspace
     }
 
     pub fn set_colorspace(&mut self, colorspace: WEBP_CSP_MODE) {
+        assert!(
+            self.0.is_external_memory <= 0
+                || WebPIsRGBMode(self.0.colorspace) == WebPIsRGBMode(colorspace),
+            "unsafe colorspace change",
+        );
         self.0.colorspace = colorspace;
+    }
+
+    pub fn width(&self) -> u32 {
+        self.0.width as u32
+    }
+
+    pub fn height(&self) -> u32 {
+        self.0.height as u32
+    }
+
+    pub fn is_external_memory(&self) -> bool {
+        self.0.is_external_memory > 0
+    }
+
+    pub fn is_slow_memory(&self) -> bool {
+        self.0.is_external_memory > 1
+    }
+
+    pub fn set_slow_memory(&mut self, is_slow_memory: bool) {
+        if self.0.is_external_memory > 0 {
+            self.0.is_external_memory = is_slow_memory as c_int + 1;
+        }
+    }
+
+    pub fn set_rgba_buffer(&mut self, rgba: &'a mut [u8], stride: u32) {
+        assert!(
+            self.0.private_memory.is_null(),
+            "Internal buffer cannot be turned into external"
+        );
+        let stride = check_int!(stride);
+        if !WebPIsRGBMode(self.0.colorspace) {
+            self.0.colorspace = WEBP_CSP_MODE::MODE_RGB;
+        }
+        if self.0.is_external_memory <= 0 {
+            self.0.is_external_memory = 1;
+        }
+        {
+            let rgbabuf = unsafe { &mut self.0.u.RGBA };
+            rgbabuf.rgba = rgba.as_mut_ptr();
+            rgbabuf.size = rgba.len();
+            rgbabuf.stride = stride;
+        }
+    }
+
+    pub fn with_rgba_buffer<'b>(self, rgba: &'b mut [u8], stride: u32) -> WebPDecBuffer<'b> {
+        let mut this = unsafe { mem::transmute::<WebPDecBuffer<'a>, WebPDecBuffer<'b>>(self) };
+        this.set_rgba_buffer(rgba, stride);
+        this
+    }
+
+    pub fn set_yuva_buffer(
+        &mut self,
+        y: &'a mut [u8],
+        u: &'a mut [u8],
+        v: &'a mut [u8],
+        a: &'a mut [u8],
+        y_stride: u32,
+        u_stride: u32,
+        v_stride: u32,
+        a_stride: u32,
+    ) {
+        assert!(
+            self.0.private_memory.is_null(),
+            "Internal buffer cannot be turned into external"
+        );
+        let y_stride = check_int!(y_stride);
+        let u_stride = check_int!(u_stride);
+        let v_stride = check_int!(v_stride);
+        let a_stride = check_int!(a_stride);
+        if WebPIsRGBMode(self.0.colorspace) {
+            self.0.colorspace = WEBP_CSP_MODE::MODE_YUV;
+        }
+        if self.0.is_external_memory <= 0 {
+            self.0.is_external_memory = 1;
+        }
+        {
+            let yuvabuf = unsafe { &mut self.0.u.YUVA };
+            yuvabuf.y = y.as_mut_ptr();
+            yuvabuf.u = u.as_mut_ptr();
+            yuvabuf.v = v.as_mut_ptr();
+            yuvabuf.a = a.as_mut_ptr();
+            yuvabuf.y_size = y.len();
+            yuvabuf.u_size = u.len();
+            yuvabuf.v_size = v.len();
+            yuvabuf.a_size = a.len();
+            yuvabuf.y_stride = y_stride;
+            yuvabuf.u_stride = u_stride;
+            yuvabuf.v_stride = v_stride;
+            yuvabuf.a_stride = a_stride;
+        }
+    }
+
+    pub fn with_yuva_buffer<'b>(
+        self,
+        y: &'b mut [u8],
+        u: &'b mut [u8],
+        v: &'b mut [u8],
+        a: &'b mut [u8],
+        y_stride: u32,
+        u_stride: u32,
+        v_stride: u32,
+        a_stride: u32,
+    ) -> WebPDecBuffer<'b> {
+        let mut this = unsafe { mem::transmute::<WebPDecBuffer<'a>, WebPDecBuffer<'b>>(self) };
+        this.set_yuva_buffer(y, u, v, a, y_stride, u_stride, v_stride, a_stride);
+        this
+    }
+
+    pub fn set_to_internal(&mut self) {
+        self.0.is_external_memory = 0;
+    }
+
+    pub fn into_internal(self) -> WebPDecBuffer<'static> {
+        let mut this = unsafe { mem::transmute::<WebPDecBuffer<'a>, WebPDecBuffer<'static>>(self) };
+        this.set_to_internal();
+        this
     }
 }
 
-impl fmt::Debug for WebPDecBuffer {
+impl<'a> fmt::Debug for WebPDecBuffer<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // TODO: debug-output u
         f.debug_struct("WebPDecBuffer")
@@ -337,12 +458,12 @@ impl fmt::Debug for WebPDecBuffer {
 }
 
 #[allow(non_snake_case)]
-pub fn WebPInitDecBuffer() -> Result<WebPDecBuffer, WebpUnknownError> {
+pub fn WebPInitDecBuffer() -> Result<WebPDecBuffer<'static>, WebpUnknownError> {
     // TODO: use MaybeUninit (MSRV >= nightly)
     let mut buffer = unsafe { mem::uninitialized() };
     let res = unsafe { sys::WebPInitDecBuffer(&mut buffer) };
     if res != 0 {
-        Ok(WebPDecBuffer(buffer))
+        Ok(WebPDecBuffer(buffer, PhantomData))
     } else {
         mem::forget(buffer);
         Err(WebpUnknownError)
@@ -375,9 +496,9 @@ impl<'a> fmt::Debug for WebPIDecoder<'a> {
 }
 
 #[allow(non_snake_case)]
-pub fn WebPINewDecoder<'a>(
-    output_buffer: Option<&'a mut WebPDecBuffer>,
-) -> Result<WebPIDecoder<'a>, WebpUnknownError> {
+pub fn WebPINewDecoder<'a, 'b>(
+    output_buffer: Option<&'b mut WebPDecBuffer<'a>>,
+) -> Result<WebPIDecoder<'b>, WebpUnknownError> {
     let output_buffer = match output_buffer {
         None => ptr::null_mut(),
         Some(p) => (&mut p.0) as *mut sys::WebPDecBuffer,
@@ -609,7 +730,7 @@ pub fn WebPIDecGetYUV<'a, 'b>(
 #[allow(non_snake_case)]
 pub fn WebPIDecodedArea<'a, 'b>(
     idec: &'b WebPIDecoder<'a>,
-) -> Result<(&'b WebPDecBuffer, u32, u32, u32, u32), WebpUnknownError> {
+) -> Result<(&'b WebPDecBuffer<'b>, u32, u32, u32, u32), WebpUnknownError> {
     let mut left: c_int = 0;
     let mut top: c_int = 0;
     let mut width: c_int = 0;

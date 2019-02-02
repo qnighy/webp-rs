@@ -96,7 +96,7 @@ pub struct WebPDecBuffer {
     pub is_external_memory: c_int,
     pub u: WebPDecBufferUnion,
     pub pad: [u32; 4],
-    private_memory: *mut u8,
+    pub private_memory: *mut u8,
 }
 
 #[allow(non_snake_case)]
